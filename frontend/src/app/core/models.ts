@@ -9,3 +9,14 @@ export interface Precio {
   clave: string;
   valor: number;
 }
+
+export interface Socio {
+  id: number;
+  dni: string;
+  nombre: string;
+  apellido: string;
+}
+
+export interface FichaSocio extends Socio {
+  actividades: Actividad[];
+}

@@ -1,0 +1,29 @@
+<section>
+  <h2>Nuevo socio</h2>
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (creado(); as s) {
+    <p class="exito" role="status">
+      Socio {{ s.nombre }} {{ s.apellido }} registrado.
+      <a [routerLink]="['/socios', s.id]">Ver ficha</a>
+    </p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <label>
+      DNI
+      <input type="text" formControlName="dni" />
+    </label>
+    <label>
+      Nombre
+      <input type="text" formControlName="nombre" />
+    </label>
+    <label>
+      Apellido
+      <input type="text" formControlName="apellido" />
+    </label>
+    <button type="submit">Registrar</button>
+  </form>
+</section>

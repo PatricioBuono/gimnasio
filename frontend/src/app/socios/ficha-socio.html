@@ -1,0 +1,39 @@
+<section>
+  @if (ficha(); as f) {
+    <h2>{{ f.nombre }} {{ f.apellido }} (DNI {{ f.dni }})</h2>
+  } @else {
+    <h2>Ficha de socio</h2>
+  }
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (exito()) {
+    <p class="exito" role="status">{{ exito() }}</p>
+  }
+
+  <h3>Actividades asignadas</h3>
+  <ul>
+    @for (a of ficha()?.actividades ?? []; track a.id) {
+      <li>{{ a.nombre }}</li>
+    } @empty {
+      <li>Sin actividades asignadas</li>
+    }
+  </ul>
+
+  <h3>Asignar actividades activas</h3>
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    @for (a of activas(); track a.id) {
+      <label>
+        <input
+          type="checkbox"
+          [checked]="marcada(a.id)"
+          (change)="alternar(a.id, $any($event.target).checked)" />
+        {{ a.nombre }}
+      </label>
+    } @empty {
+      <p>No hay actividades activas en el catálogo</p>
+    }
+    <button type="submit">Guardar asignación</button>
+  </form>
+</section>

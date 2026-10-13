@@ -1,0 +1,15 @@
+.error {
+  color: #b00020;
+  font-weight: bold;
+}
+
+.exito {
+  color: #1b7a2e;
+  font-weight: bold;
+}
+
+form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
