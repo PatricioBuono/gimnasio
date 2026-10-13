@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.gimnasio.controlador.ActividadControladorTest
--------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.770 s -- in com.gimnasio.controlador.ActividadControladorTest
