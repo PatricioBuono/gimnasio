@@ -1,14 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ActividadService } from '../core/actividad.service';
 import { SocioService } from '../core/socio.service';
 import { Actividad, FichaSocio } from '../core/models';
 
 @Component({
   selector: 'app-ficha-socio',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './ficha-socio.html',
   styleUrl: './ficha-socio.css',
 })

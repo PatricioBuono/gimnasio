@@ -1,0 +1,26 @@
+.error {
+  color: #b00020;
+  font-weight: bold;
+}
+
+.exito {
+  color: #1b7a2e;
+  font-weight: bold;
+}
+
+form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+button:disabled {
+  opacity: 0.5;
+}

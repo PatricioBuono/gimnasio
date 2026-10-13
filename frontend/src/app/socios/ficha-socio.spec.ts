@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { FichaSocioComponent } from './ficha-socio';
 import { ActividadService } from '../core/actividad.service';
@@ -37,6 +38,7 @@ describe('FichaSocioComponent', () => {
       providers: [
         { provide: SocioService, useValue: socios },
         { provide: ActividadService, useValue: actividades },
+        provideRouter([]),
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } },
       ],
     }).compileComponents();

@@ -1,0 +1,59 @@
+<section>
+  <h2>Cobro de cuota</h2>
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (comprobante(); as c) {
+    <p class="exito" role="status">
+      Cobro registrado. Comprobante {{ c.numero }} — Total ${{ c.total }}
+      @if (c.etiqueta) {
+        <span>({{ c.etiqueta }})</span>
+      }
+    </p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="calcular()">
+    <label>
+      Período (AAAA-MM)
+      <input type="text" formControlName="periodo" placeholder="2026-10" />
+    </label>
+    <label>
+      Método
+      <select formControlName="metodo">
+        <option value="EFECTIVO">Efectivo</option>
+        <option value="TRANSFERENCIA">Transferencia</option>
+      </select>
+    </label>
+    <button type="submit">Calcular</button>
+  </form>
+
+  @if (vista(); as v) {
+    <h3>Desglose</h3>
+    <ul>
+      <li>Cuota: ${{ v.cuota }}</li>
+      <li>Recargo ({{ v.semanas }} semanas): ${{ v.recargo }}</li>
+      <li>Total: ${{ totalMostrado() }}</li>
+    </ul>
+
+    <label>
+      <input
+        type="checkbox"
+        [checked]="exonerado()"
+        (change)="alternarExoneracion($any($event.target).checked)" />
+      Exonerar recargo
+    </label>
+
+    @if (exonerado()) {
+      <label>
+        Motivo (obligatorio)
+        <input
+          type="text"
+          [value]="motivo()"
+          (input)="motivo.set($any($event.target).value)" />
+      </label>
+    }
+
+    <button type="button" (click)="pagar()" [disabled]="!puedePagar()">Registrar pago</button>
+  }
+</section>
