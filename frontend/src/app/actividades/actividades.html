@@ -1,0 +1,47 @@
+<section>
+  <h2>Actividades</h2>
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <label>
+      Nombre
+      <input type="text" formControlName="nombre" />
+    </label>
+    <label>
+      Descripción
+      <input type="text" formControlName="descripcion" />
+    </label>
+    <button type="submit">{{ editandoId() === null ? 'Crear' : 'Guardar' }}</button>
+    @if (editandoId() !== null) {
+      <button type="button" (click)="cancelarEdicion()">Cancelar</button>
+    }
+  </form>
+
+  @if (cargando()) {
+    <p>Cargando…</p>
+  } @else {
+    <ul>
+      @for (a of actividades(); track a.id) {
+        <li>
+          <strong>{{ a.nombre }}</strong>
+          <span>[{{ a.estado }}]</span>
+          @if (a.descripcion) {
+            <span> — {{ a.descripcion }}</span>
+          }
+          <button type="button" (click)="editar(a)">Editar</button>
+          @if (a.estado === 'ACTIVA') {
+            <button type="button" (click)="inhabilitar(a)">Inhabilitar</button>
+          } @else {
+            <button type="button" (click)="habilitar(a)">Habilitar</button>
+          }
+          <button type="button" (click)="eliminar(a)">Eliminar</button>
+        </li>
+      } @empty {
+        <li>No hay actividades cargadas</li>
+      }
+    </ul>
+  }
+</section>

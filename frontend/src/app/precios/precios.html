@@ -1,0 +1,31 @@
+<section>
+  <h2>Configuración de precios</h2>
+
+  @if (exito()) {
+    <p class="exito" role="status">{{ exito() }}</p>
+  }
+
+  <h3>Cuota (actual: {{ cuotaActual() ?? '—' }})</h3>
+  @if (errorCuota()) {
+    <p class="error" role="alert">{{ errorCuota() }}</p>
+  }
+  <form [formGroup]="formCuota" (ngSubmit)="guardarCuota()">
+    <label>
+      Nuevo valor (mayor a 0)
+      <input type="number" step="0.01" min="0.01" formControlName="valor" />
+    </label>
+    <button type="submit">Guardar cuota</button>
+  </form>
+
+  <h3>Recargo semanal (actual: {{ recargoActual() ?? '—' }})</h3>
+  @if (errorRecargo()) {
+    <p class="error" role="alert">{{ errorRecargo() }}</p>
+  }
+  <form [formGroup]="formRecargo" (ngSubmit)="guardarRecargo()">
+    <label>
+      Nuevo valor (mayor o igual a 0)
+      <input type="number" step="0.01" min="0" formControlName="valor" />
+    </label>
+    <button type="submit">Guardar recargo</button>
+  </form>
+</section>
