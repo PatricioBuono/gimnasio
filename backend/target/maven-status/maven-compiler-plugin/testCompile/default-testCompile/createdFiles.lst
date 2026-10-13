@@ -1,0 +1,6 @@
+com\gimnasio\controlador\PrecioControladorTest.class
+com\gimnasio\servicio\FeriadoServicioTest.class
+com\gimnasio\servicio\PrecioServicioTest.class
+com\gimnasio\seguridad\SeguridadControlAccesoTest.class
+com\gimnasio\controlador\ActividadControladorTest.class
+com\gimnasio\servicio\ActividadServicioTest.class
