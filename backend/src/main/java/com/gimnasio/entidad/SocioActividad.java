@@ -26,4 +26,12 @@ public class SocioActividad {
     this.socioId = socioId;
     this.actividadId = actividadId;
   }
+
+  public Integer getSocioId() {
+    return socioId;
+  }
+
+  public Integer getActividadId() {
+    return actividadId;
+  }
 }
