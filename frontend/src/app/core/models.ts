@@ -44,3 +44,21 @@ export interface Comprobante {
   etiqueta: string | null;
   fechaLimite: string;
 }
+
+export type EstadoSocio = 'AL_DIA' | 'CON_DEUDA';
+
+export interface SocioEstado {
+  id: number;
+  dni: string;
+  nombre: string;
+  apellido: string;
+  actividades: Actividad[];
+  estado: EstadoSocio;
+  diasAtraso: number;
+  fechaLimite: string;
+}
+
+export interface Dashboard {
+  alDia: SocioEstado[];
+  conDeuda: SocioEstado[];
+}
