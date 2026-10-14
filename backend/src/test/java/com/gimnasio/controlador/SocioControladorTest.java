@@ -10,12 +10,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.gimnasio.config.ZonaHorariaConfig;
+import com.gimnasio.dto.DashboardResponse;
 import com.gimnasio.dto.FichaSocioResponse;
 import com.gimnasio.dto.SocioResponse;
 import com.gimnasio.seguridad.JwtFilter;
 import com.gimnasio.seguridad.JwtUtil;
 import com.gimnasio.seguridad.SecurityConfig;
 import com.gimnasio.seguridad.UsuarioDetailsService;
+import com.gimnasio.servicio.SocioEstadoServicio;
 import com.gimnasio.servicio.SocioServicio;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,9 @@ class SocioControladorTest {
 
   @MockBean
   private SocioServicio servicio;
+
+  @MockBean
+  private SocioEstadoServicio estados;
 
   @MockBean
   private UsuarioDetailsService usuarios;
@@ -102,5 +107,21 @@ class SocioControladorTest {
   @Test
   void sinToken_devuelve401() throws Exception {
     mvc.perform(get("/api/socios/1")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @WithMockUser(roles = "RECEPCIONISTA")
+  void estado_devuelve200() throws Exception {
+    when(estados.dashboard()).thenReturn(new DashboardResponse(List.of(), List.of()));
+
+    mvc.perform(get("/api/socios/estado")).andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(roles = "RECEPCIONISTA")
+  void buscar_devuelve200() throws Exception {
+    when(estados.buscar(eq("Juan"))).thenReturn(List.of());
+
+    mvc.perform(get("/api/socios/buscar").param("q", "Juan")).andExpect(status().isOk());
   }
 }

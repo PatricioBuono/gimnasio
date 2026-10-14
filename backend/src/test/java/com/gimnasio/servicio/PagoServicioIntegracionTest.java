@@ -31,9 +31,10 @@ import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -49,8 +50,15 @@ class PagoServicioIntegracionTest {
   private static final ZoneId ZONA = ZoneId.of("America/Argentina/Mendoza");
 
   @Container
-  @ServiceConnection
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+
+  @DynamicPropertySource
+  static void propiedades(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url",
+        () -> postgres.getJdbcUrl() + "?options=-c%20TimeZone%3DAmerica/Argentina/Mendoza");
+    registry.add("spring.datasource.username", postgres::getUsername);
+    registry.add("spring.datasource.password", postgres::getPassword);
+  }
 
   static boolean dockerDisponible() {
     try {
@@ -65,13 +73,15 @@ class PagoServicioIntegracionTest {
   static class RelojFijo {
     @Bean
     @Primary
-    Clock reloj() {
+    Clock relojFijo() {
       return Clock.fixed(Instant.parse("2026-10-05T15:00:00Z"), ZONA);
     }
   }
 
   @Autowired
   private PagoServicio servicio;
+  @Autowired
+  private com.gimnasio.servicio.SocioEstadoServicio estados;
   @Autowired
   private SocioRepositorio socios;
   @Autowired
@@ -187,5 +197,54 @@ class PagoServicioIntegracionTest {
     ParametroPrecio p = parametros.findById(clave).orElseThrow();
     p.setValor(valor);
     parametros.save(p);
+  }
+
+  @Test
+  void dashboard_separaYOrdenaPorDiasDesc() {
+    Integer viejo = alta("77000001", "Viejo", "Mora", "2026-01-05T12:00:00-03:00");
+    Integer reciente = alta("77000002", "Reciente", "Mora", "2026-05-05T12:00:00-03:00");
+    Integer alDia = alta("77000003", "AlDia", "Ok", "2026-09-01T12:00:00-03:00");
+    servicio.registrar(new PagoRequest(viejo, "2026-06", MetodoPago.EFECTIVO, false, null), "admin");
+    servicio.registrar(new PagoRequest(reciente, "2026-08", MetodoPago.EFECTIVO, false, null), "admin");
+    servicio.registrar(new PagoRequest(alDia, "2026-09", MetodoPago.EFECTIVO, false, null), "admin");
+
+    var dashboard = estados.dashboard();
+    var morosos = dashboard.conDeuda();
+    long anterior = Long.MAX_VALUE;
+    for (var m : morosos) {
+      assertTrue(m.diasAtraso() <= anterior, "Morosos no ordenados DESC");
+      anterior = m.diasAtraso();
+    }
+    assertEquals(87, estados.buscar("77000001").get(0).diasAtraso());
+    assertEquals(25, estados.buscar("77000002").get(0).diasAtraso());
+    assertTrue(dashboard.alDia().stream().anyMatch(s -> s.dni().equals("77000003")));
+  }
+
+  @Test
+  void buscar_porDniExactoYPOrNombre() {
+    alta("77123456", "PruebaBusqueda", "Unica", "2026-09-01T12:00:00-03:00");
+
+    var porDni = estados.buscar("77.123.456");
+    assertEquals(1, porDni.size());
+    assertEquals("PruebaBusqueda", porDni.get(0).nombre());
+
+    var porNombre = estados.buscar("pruebabusqueda");
+    assertTrue(porNombre.stream().anyMatch(s -> s.dni().equals("77123456")));
+
+    assertTrue(estados.buscar("zzzznada").isEmpty());
+    assertTrue(estados.buscar("   ").isEmpty());
+  }
+
+  @Test
+  void dashboard_limitaMorososA20() {
+    for (int i = 0; i < 21; i++) {
+      alta("88000" + i, "Moroso" + i, "Lote", "2026-01-05T12:00:00-03:00");
+    }
+
+    assertEquals(20, estados.dashboard().conDeuda().size());
+  }
+
+  private Integer alta(String dni, String nombre, String apellido, String creadoEn) {
+    return socios.save(new Socio(dni, nombre, apellido, OffsetDateTime.parse(creadoEn))).getId();
   }
 }

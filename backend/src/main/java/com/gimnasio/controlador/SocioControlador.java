@@ -1,11 +1,15 @@
 package com.gimnasio.controlador;
 
 import com.gimnasio.dto.AsignacionRequest;
+import com.gimnasio.dto.DashboardResponse;
 import com.gimnasio.dto.FichaSocioResponse;
+import com.gimnasio.dto.SocioEstadoResponse;
 import com.gimnasio.dto.SocioRequest;
 import com.gimnasio.dto.SocioResponse;
+import com.gimnasio.servicio.SocioEstadoServicio;
 import com.gimnasio.servicio.SocioServicio;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,9 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class SocioControlador {
 
   private final SocioServicio servicio;
+  private final SocioEstadoServicio estados;
 
-  public SocioControlador(SocioServicio servicio) {
+  public SocioControlador(SocioServicio servicio, SocioEstadoServicio estados) {
     this.servicio = servicio;
+    this.estados = estados;
   }
 
   @PostMapping
@@ -42,5 +49,15 @@ public class SocioControlador {
   @GetMapping("/{id}")
   public FichaSocioResponse ficha(@PathVariable Integer id) {
     return servicio.ficha(id);
+  }
+
+  @GetMapping("/estado")
+  public DashboardResponse estado() {
+    return estados.dashboard();
+  }
+
+  @GetMapping("/buscar")
+  public List<SocioEstadoResponse> buscar(@RequestParam(defaultValue = "") String q) {
+    return estados.buscar(q);
   }
 }

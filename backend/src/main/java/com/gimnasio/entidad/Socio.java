@@ -53,4 +53,8 @@ public class Socio {
   public String getApellido() {
     return apellido;
   }
+
+  public OffsetDateTime getCreadoEn() {
+    return creadoEn;
+  }
 }
