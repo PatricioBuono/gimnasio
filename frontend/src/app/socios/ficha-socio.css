@@ -1,21 +1,16 @@
-.error {
-  color: #b00020;
-  font-weight: bold;
-}
-
-.exito {
-  color: #1b7a2e;
-  font-weight: bold;
-}
-
 form {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 ul {
   list-style: none;
   padding: 0;
+}
+
+li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--borde);
 }

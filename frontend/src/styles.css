@@ -1,1 +1,204 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --fondo: #121212;
+  --superficie: #1a1a1a;
+  --superficie-elevada: #242424;
+  --borde: #2e2e2e;
+  --texto: #f5f5f5;
+  --texto-secundario: #b9d8b9;
+  --verde: #4caf50;
+  --verde-oscuro: #2e7d32;
+  --verde-neon: #39ff14;
+  --alerta: #ff5252;
+  --alerta-suave: #ff8a80;
+  --aviso: #ff9800;
+  --radio: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--fondo);
+  color: var(--texto);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+::selection {
+  background-color: var(--verde-oscuro);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--fondo);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--verde-oscuro);
+  border-radius: 5px;
+}
+
+a {
+  color: var(--verde);
+}
+a:hover {
+  color: var(--verde-neon);
+}
+
+:focus-visible {
+  outline: 2px solid var(--verde-neon);
+  outline-offset: 2px;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background-color: #0d0d0d;
+  border-bottom: 2px solid var(--verde-oscuro);
+}
+
+nav a {
+  color: var(--texto);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+}
+
+nav a:hover {
+  color: var(--verde-neon);
+}
+
+main {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+section {
+  background-color: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+section h2 {
+  margin-top: 0;
+  color: var(--verde);
+}
+
+section h3 {
+  color: var(--texto);
+  margin-bottom: 0.5rem;
+}
+
+button {
+  background-color: var(--verde-oscuro);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--verde);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button[type='button'] {
+  background-color: transparent;
+  border: 1px solid var(--verde-oscuro);
+  color: var(--verde);
+}
+
+button[type='button']:hover {
+  border-color: var(--verde-neon);
+  color: var(--verde-neon);
+}
+
+input,
+select {
+  background-color: var(--superficie-elevada);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 0.5rem;
+  caret-color: var(--verde-neon);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--verde);
+  outline: none;
+}
+
+input::placeholder {
+  color: var(--texto-secundario);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+.error {
+  color: var(--alerta-suave);
+  background-color: rgba(255, 82, 82, 0.12);
+  border: 1px solid var(--alerta);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+}
+
+.exito {
+  color: var(--verde-neon);
+  font-weight: 600;
+}
+
+.mora {
+  color: #ffd54f;
+  background-color: rgba(255, 152, 0, 0.14);
+  border: 1px solid var(--aviso);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.deuda-chip {
+  color: #ffffff;
+  background-color: var(--alerta);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ok-chip {
+  color: #0d0d0d;
+  background-color: var(--verde);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-weight: 700;
+  white-space: nowrap;
+}

@@ -26,9 +26,9 @@
         @for (s of busquedaFiltrada(); track s.id) {
           <li>
             <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
-            <span>[{{ s.estado === 'AL_DIA' ? 'Al día' : 'Con deuda' }}]</span>
+            <span class="{{ s.estado === 'AL_DIA' ? 'ok-chip' : 'deuda-chip' }}">[{{ s.estado === 'AL_DIA' ? 'Al día' : 'Con deuda' }}]</span>
             @if (s.estado === 'CON_DEUDA') {
-              <span>{{ etiquetaMora(s) }}</span>
+              <span class="mora">{{ etiquetaMora(s) }}</span>
             }
             <a [routerLink]="['/cobros', s.id]">Cobrar</a>
           </li>
@@ -41,7 +41,7 @@
       @for (s of alDia(); track s.id) {
         <li>
           <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
-          <span>[Al día]</span>
+          <span class="ok-chip">[Al día]</span>
           @for (a of s.actividades; track a.id) {
             <span>{{ a.nombre }}</span>
           }
@@ -57,8 +57,8 @@
       @for (s of conDeuda(); track s.id) {
         <li>
           <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
-          <span>[Con deuda]</span>
-          <span>{{ etiquetaMora(s) }}</span>
+          <span class="deuda-chip">[Con deuda]</span>
+          <span class="mora">{{ etiquetaMora(s) }}</span>
           @for (a of s.actividades; track a.id) {
             <span>{{ a.nombre }}</span>
           }
