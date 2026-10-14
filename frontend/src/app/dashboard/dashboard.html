@@ -1,0 +1,72 @@
+<section>
+  <h2>Dashboard</h2>
+
+  <label>
+    Buscar por DNI o nombre
+    <input type="text" [formControl]="busqueda" placeholder="DNI o nombre" />
+  </label>
+
+  <label>
+    Filtrar por actividad
+    <select (change)="cambiarFiltro($any($event.target).value)">
+      <option value="">Todas</option>
+      @for (a of actividadesDisponibles(); track a.id) {
+        <option [value]="a.id">{{ a.nombre }}</option>
+      }
+    </select>
+  </label>
+
+  @if (enBusqueda()) {
+    <h3>Resultados</h3>
+    @if (busquedaFiltrada().length === 0) {
+      <p>Sin resultados</p>
+      <p><a routerLink="/socios/nuevo">Nuevo Socio</a></p>
+    } @else {
+      <ul>
+        @for (s of busquedaFiltrada(); track s.id) {
+          <li>
+            <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
+            <span>[{{ s.estado === 'AL_DIA' ? 'Al día' : 'Con deuda' }}]</span>
+            @if (s.estado === 'CON_DEUDA') {
+              <span>{{ etiquetaMora(s) }}</span>
+            }
+            <a [routerLink]="['/cobros', s.id]">Cobrar</a>
+          </li>
+        }
+      </ul>
+    }
+  } @else {
+    <h3>Al día</h3>
+    <ul>
+      @for (s of alDia(); track s.id) {
+        <li>
+          <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
+          <span>[Al día]</span>
+          @for (a of s.actividades; track a.id) {
+            <span>{{ a.nombre }}</span>
+          }
+          <a [routerLink]="['/cobros', s.id]">Cobrar</a>
+        </li>
+      } @empty {
+        <li>No hay socios al día</li>
+      }
+    </ul>
+
+    <h3>Con deuda</h3>
+    <ul>
+      @for (s of conDeuda(); track s.id) {
+        <li>
+          <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
+          <span>[Con deuda]</span>
+          <span>{{ etiquetaMora(s) }}</span>
+          @for (a of s.actividades; track a.id) {
+            <span>{{ a.nombre }}</span>
+          }
+          <a [routerLink]="['/cobros', s.id]">Cobrar</a>
+        </li>
+      } @empty {
+        <li>No hay socios con deuda</li>
+      }
+    </ul>
+  }
+</section>
