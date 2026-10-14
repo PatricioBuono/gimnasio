@@ -1,0 +1,19 @@
+<section>
+  <h2>Iniciar sesión</h2>
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="ingresar()">
+    <label>
+      Usuario
+      <input type="text" formControlName="username" autocomplete="username" />
+    </label>
+    <label>
+      Contraseña
+      <input type="password" formControlName="password" autocomplete="current-password" />
+    </label>
+    <button type="submit">Ingresar</button>
+  </form>
+</section>
