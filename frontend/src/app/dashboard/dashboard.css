@@ -5,11 +5,16 @@ ul {
 
 li {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0.5rem;
   border-bottom: 1px solid var(--borde);
+}
+
+.accion {
+  margin-left: auto;
+  font-weight: 700;
 }
 
 label {

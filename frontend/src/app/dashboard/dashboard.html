@@ -30,7 +30,7 @@
             @if (s.estado === 'CON_DEUDA') {
               <span class="mora">{{ etiquetaMora(s) }}</span>
             }
-            <a [routerLink]="['/cobros', s.id]">Cobrar</a>
+            <a class="accion" [routerLink]="['/cobros', s.id]">Cobrar</a>
           </li>
         }
       </ul>
@@ -45,10 +45,10 @@
           @for (a of s.actividades; track a.id) {
             <span>{{ a.nombre }}</span>
           }
-          <a [routerLink]="['/cobros', s.id]">Cobrar</a>
+          <a class="accion" [routerLink]="['/cobros', s.id]">Cobrar</a>
         </li>
       } @empty {
-        <li>No hay socios al día</li>
+        <li class="vacio">No hay socios al día</li>
       }
     </ul>
 
@@ -62,10 +62,10 @@
           @for (a of s.actividades; track a.id) {
             <span>{{ a.nombre }}</span>
           }
-          <a [routerLink]="['/cobros', s.id]">Cobrar</a>
+          <a class="accion" [routerLink]="['/cobros', s.id]">Cobrar</a>
         </li>
       } @empty {
-        <li>No hay socios con deuda</li>
+        <li class="vacio">No hay socios con deuda</li>
       }
     </ul>
   }
