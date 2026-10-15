@@ -113,6 +113,7 @@ nav a:hover {
 
 nav a.active {
   color: var(--verde-marca);
+  font-weight: 700;
   border-bottom: 2px solid var(--verde-marca);
 }
 

@@ -43,6 +43,16 @@ describe('ConfirmarDialogo', () => {
     expect(cancelado).toHaveBeenCalledTimes(1);
   });
 
+  it('variante primaria usa botón primario', () => {
+    fixture.componentRef.setInput('variante', 'primario');
+    fixture.componentRef.setInput('textoConfirmar', 'Guardar');
+    fixture.detectChanges();
+
+    const confirmar = (fixture.nativeElement as HTMLElement).querySelectorAll('button')[1];
+    expect(confirmar.classList.contains('btn-primario')).toBe(true);
+    expect(confirmar.textContent?.trim()).toBe('Guardar');
+  });
+
   it('cerrar devuelve el foco al disparador', () => {
     const disparador = document.createElement('button');
     document.body.appendChild(disparador);

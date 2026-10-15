@@ -9,6 +9,12 @@
   <p id="mensaje-confirmar">{{ mensaje() }}</p>
   <div class="acciones-dialogo">
     <button type="button" (click)="cancelar()">Cancelar</button>
-    <button type="button" class="btn-peligro" (click)="confirmar()">{{ textoConfirmar() }}</button>
+    <button
+      type="button"
+      [class.btn-peligro]="variante() === 'peligro'"
+      [class.btn-primario]="variante() === 'primario'"
+      (click)="confirmar()">
+      {{ textoConfirmar() }}
+    </button>
   </div>
 </dialog>

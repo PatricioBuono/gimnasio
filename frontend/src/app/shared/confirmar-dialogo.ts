@@ -9,6 +9,7 @@ export class ConfirmarDialogo {
   titulo = input.required<string>();
   mensaje = input('');
   textoConfirmar = input('Confirmar');
+  variante = input<'peligro' | 'primario'>('peligro');
 
   confirmado = output<void>();
   cancelado = output<void>();
