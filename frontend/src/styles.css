@@ -142,18 +142,18 @@ section h3 {
 }
 
 button {
-  background-color: var(--verde-oscuro);
-  color: #ffffff;
+  background-color: var(--verde-marca);
+  color: #0d0d0d;
   border: none;
   border-radius: 8px;
   padding: 0.5rem 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 150ms ease-out;
 }
 
 button:hover:not(:disabled) {
-  background-color: var(--verde);
+  background-color: #63c667;
 }
 
 button:disabled {
@@ -161,15 +161,41 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button[type='button'] {
+button[type='button'],
+.btn-secundario {
   background-color: transparent;
-  border: 1px solid var(--verde-oscuro);
-  color: var(--verde);
+  border: 1px solid #6e6e6e;
+  color: var(--texto);
 }
 
-button[type='button']:hover {
-  border-color: var(--verde-neon);
-  color: var(--verde-neon);
+button[type='button']:hover,
+.btn-secundario:hover {
+  background-color: transparent;
+  border-color: var(--texto);
+  color: var(--texto);
+}
+
+.btn-primario {
+  background-color: var(--verde-marca);
+  color: #0d0d0d;
+  border: none;
+}
+
+button.btn-primario:hover:not(:disabled) {
+  background-color: #63c667;
+  color: #0d0d0d;
+}
+
+.btn-peligro {
+  background-color: transparent;
+  border: 1px solid var(--alerta);
+  color: var(--alerta-suave);
+}
+
+button.btn-peligro:hover {
+  background-color: rgba(255, 82, 82, 0.12);
+  border-color: var(--alerta);
+  color: var(--alerta-suave);
 }
 
 input,

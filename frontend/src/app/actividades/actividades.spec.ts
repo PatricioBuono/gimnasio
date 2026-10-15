@@ -16,6 +16,10 @@ describe('Actividades', () => {
     { id: 2, nombre: 'Yoga', descripcion: 'suave', estado: 'INHABILITADA' },
   ];
 
+  function texto(): string {
+    return (fixture.nativeElement as HTMLElement).textContent ?? '';
+  }
+
   beforeEach(async () => {
     servicio = {
       listar: vi.fn().mockReturnValue(of(lista)),
@@ -34,19 +38,40 @@ describe('Actividades', () => {
     fixture.detectChanges();
   });
 
-  it('renderiza el listado con estado', () => {
-    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(texto).toContain('Crossfit');
-    expect(texto).toContain('[ACTIVA]');
-    expect(texto).toContain('Yoga');
+  it('renderiza tabla con pill de estado sin corchetes', () => {
+    expect(texto()).toContain('Actividades · 2');
+    expect(texto()).toContain('Crossfit');
+    expect(texto()).toContain('Activa');
+    expect(texto()).toContain('Inactiva');
+    expect(texto()).not.toContain('[ACTIVA]');
   });
 
-  it('crear llama al servicio y recarga', () => {
+  it('botones de fila tienen nombre accesible con la actividad', () => {
+    const eliminar = (fixture.nativeElement as HTMLElement).querySelector(
+      'button[aria-label="Eliminar Crossfit"]',
+    );
+    expect(eliminar?.textContent?.trim()).toBe('Eliminar');
+  });
+
+  it('crear limpia, enfoca nombre y confirma', () => {
     comp.form.setValue({ nombre: 'Funcional', descripcion: '' });
     comp.guardar();
+    fixture.detectChanges();
 
     expect(servicio.crear).toHaveBeenCalledWith({ nombre: 'Funcional', descripcion: null });
-    expect(servicio.listar).toHaveBeenCalledTimes(2);
+    expect(texto()).toContain('creada');
+    expect(document.activeElement?.getAttribute('formcontrolname')).toBe('nombre');
+  });
+
+  it('formulario inválido marca aria-invalid y no llama', () => {
+    comp.form.setValue({ nombre: '', descripcion: '' });
+    comp.guardar();
+    fixture.detectChanges();
+
+    expect(servicio.crear).not.toHaveBeenCalled();
+    const input = fixture.nativeElement.querySelector('input[formcontrolname="nombre"]');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(texto()).toContain('El nombre es obligatorio');
   });
 
   it('editar existente llama a editar', () => {
@@ -56,22 +81,23 @@ describe('Actividades', () => {
     expect(servicio.editar).toHaveBeenCalledWith(1, { nombre: 'Crossfit', descripcion: null });
   });
 
-  it('formulario inválido no llama al servicio', () => {
-    comp.form.setValue({ nombre: '', descripcion: '' });
-    comp.guardar();
+  it('pedir eliminar abre diálogo con el nombre y confirmar elimina', () => {
+    comp.pedirEliminar(lista[0], document.createElement('button'));
+    fixture.detectChanges();
 
-    expect(servicio.crear).not.toHaveBeenCalled();
+    expect(texto()).toContain('Eliminar Crossfit');
+    comp.eliminarConfirmado();
+
+    expect(servicio.eliminar).toHaveBeenCalledWith(1);
   });
 
   it('eliminar con socios muestra mensaje de inhabilitar', () => {
-    servicio.eliminar.mockReturnValue(
-      throwError(() => ({ status: 409 }) as never),
-    );
-    comp.eliminar(lista[0]);
+    servicio.eliminar.mockReturnValue(throwError(() => ({ status: 409 }) as never));
+    comp.pedirEliminar(lista[0], document.createElement('button'));
+    comp.eliminarConfirmado();
     fixture.detectChanges();
 
-    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(texto).toContain('inhabilítela');
+    expect(texto()).toContain('inhabilítela');
   });
 
   it('botones inhabilitar/habilitar llaman al servicio', () => {
@@ -79,5 +105,21 @@ describe('Actividades', () => {
     expect(servicio.inhabilitar).toHaveBeenCalledWith(1);
     comp.habilitar(lista[1]);
     expect(servicio.habilitar).toHaveBeenCalledWith(2);
+  });
+
+  it('vacío muestra mensaje con guía', () => {
+    servicio.listar.mockReturnValue(of([]));
+    comp.cargar();
+    fixture.detectChanges();
+
+    expect(texto()).toContain('Todavía no hay actividades');
+  });
+
+  it('error de carga muestra reintento', () => {
+    servicio.listar.mockReturnValue(throwError(() => ({ status: 500 }) as never));
+    comp.cargar();
+    fixture.detectChanges();
+
+    expect(texto()).toContain('Reintentar');
   });
 });

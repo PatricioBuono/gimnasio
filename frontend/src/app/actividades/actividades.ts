@@ -1,21 +1,27 @@
-import { Component, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActividadService } from '../core/actividad.service';
 import { Actividad } from '../core/models';
+import { ConfirmarDialogo } from '../shared/confirmar-dialogo';
 
 @Component({
   selector: 'app-actividades',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ConfirmarDialogo],
   templateUrl: './actividades.html',
   styleUrl: './actividades.css',
 })
 export class Actividades {
   actividades = signal<Actividad[]>([]);
-  cargando = signal(false);
+  cargando = signal(true);
   error = signal<string | null>(null);
+  exito = signal<string | null>(null);
   editandoId = signal<number | null>(null);
+  eliminarPendiente = signal<Actividad | null>(null);
   form: FormGroup;
+
+  @ViewChild('nombreInput') nombreInput!: ElementRef<HTMLInputElement>;
+  @ViewChild(ConfirmarDialogo) dialogo!: ConfirmarDialogo;
 
   constructor(
     private fb: FormBuilder,
@@ -26,6 +32,11 @@ export class Actividades {
       descripcion: [''],
     });
     this.cargar();
+  }
+
+  get nombreInvalido(): boolean {
+    const c = this.form.get('nombre');
+    return !!c && c.invalid && (c.touched || c.dirty);
   }
 
   cargar(): void {
@@ -49,12 +60,16 @@ export class Actividades {
       return;
     }
     this.error.set(null);
+    this.exito.set(null);
     const payload = { nombre: this.form.value.nombre.trim(), descripcion: this.form.value.descripcion || null };
     const id = this.editandoId();
-    const operacion = id === null ? this.servicio.crear(payload) : this.servicio.editar(id, payload);
+    const esEdicion = id !== null;
+    const operacion = esEdicion ? this.servicio.editar(id, payload) : this.servicio.crear(payload);
     operacion.subscribe({
-      next: () => {
+      next: (a) => {
+        this.exito.set(esEdicion ? `Actividad "${a.nombre}" actualizada` : `Actividad "${a.nombre}" creada`);
         this.cancelarEdicion();
+        this.nombreInput?.nativeElement.focus();
         this.cargar();
       },
       error: (e: HttpErrorResponse) => this.error.set(this.mensajeError(e, 'guardar')),
@@ -62,8 +77,10 @@ export class Actividades {
   }
 
   editar(a: Actividad): void {
+    this.exito.set(null);
     this.editandoId.set(a.id);
     this.form.setValue({ nombre: a.nombre, descripcion: a.descripcion ?? '' });
+    this.nombreInput?.nativeElement.focus();
   }
 
   cancelarEdicion(): void {
@@ -71,24 +88,44 @@ export class Actividades {
     this.form.reset();
   }
 
-  eliminar(a: Actividad): void {
+  pedirEliminar(a: Actividad, disparador: HTMLElement): void {
+    this.eliminarPendiente.set(a);
+    this.dialogo.abrir(disparador);
+  }
+
+  eliminarConfirmado(): void {
+    const a = this.eliminarPendiente();
+    this.eliminarPendiente.set(null);
+    if (!a) {
+      return;
+    }
     this.error.set(null);
+    this.exito.set(null);
     this.servicio.eliminar(a.id).subscribe({
-      next: () => this.cargar(),
+      next: () => {
+        this.exito.set(`Actividad "${a.nombre}" eliminada`);
+        this.cargar();
+      },
       error: (e: HttpErrorResponse) => this.error.set(this.mensajeError(e, 'eliminar')),
     });
   }
 
   inhabilitar(a: Actividad): void {
     this.servicio.inhabilitar(a.id).subscribe({
-      next: () => this.cargar(),
+      next: () => {
+        this.exito.set(`Actividad "${a.nombre}" inhabilitada`);
+        this.cargar();
+      },
       error: (e: HttpErrorResponse) => this.error.set(this.mensajeError(e, 'inhabilitar')),
     });
   }
 
   habilitar(a: Actividad): void {
     this.servicio.habilitar(a.id).subscribe({
-      next: () => this.cargar(),
+      next: () => {
+        this.exito.set(`Actividad "${a.nombre}" habilitada`);
+        this.cargar();
+      },
       error: (e: HttpErrorResponse) => this.error.set(this.mensajeError(e, 'habilitar')),
     });
   }
