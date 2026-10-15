@@ -26,6 +26,6 @@ describe('App', () => {
     expect(textos).toContain('Dashboard');
     expect(textos).toContain('Actividades');
     expect(textos).toContain('Precios');
-    expect(textos).toContain('Nuevo socio');
+    expect(compiled.querySelector('.marca')?.textContent).toContain('HULK');
   });
 });

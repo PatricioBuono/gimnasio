@@ -1,72 +1,204 @@
-<section>
-  <h2>Dashboard</h2>
+<div class="pagina">
+  <header class="encabezado">
+    <div>
+      <h1>Socios</h1>
+      <p class="subtitulo">Control de accesos y cobros del gimnasio</p>
+    </div>
+    <a class="boton-primario" routerLink="/socios/nuevo">+ Nuevo socio</a>
+  </header>
 
-  <label>
-    Buscar por DNI o nombre
-    <input type="text" [formControl]="busqueda" placeholder="DNI o nombre" />
-  </label>
-
-  <label>
-    Filtrar por actividad
-    <select (change)="cambiarFiltro($any($event.target).value)">
-      <option value="">Todas</option>
-      @for (a of actividadesDisponibles(); track a.id) {
-        <option [value]="a.id">{{ a.nombre }}</option>
-      }
-    </select>
-  </label>
-
-  @if (enBusqueda()) {
-    <h3>Resultados</h3>
-    @if (busquedaFiltrada().length === 0) {
-      <p>Sin resultados</p>
-      <p><a routerLink="/socios/nuevo">Nuevo Socio</a></p>
-    } @else {
-      <ul>
-        @for (s of busquedaFiltrada(); track s.id) {
-          <li>
-            <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
-            <span class="{{ s.estado === 'AL_DIA' ? 'ok-chip' : 'deuda-chip' }}">[{{ s.estado === 'AL_DIA' ? 'Al día' : 'Con deuda' }}]</span>
-            @if (s.estado === 'CON_DEUDA') {
-              <span class="mora">{{ etiquetaMora(s) }}</span>
-            }
-            <a class="accion" [routerLink]="['/cobros', s.id]">Cobrar</a>
-          </li>
-        }
-      </ul>
-    }
-  } @else {
-    <h3>Al día</h3>
-    <ul>
-      @for (s of alDia(); track s.id) {
-        <li>
-          <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
-          <span class="ok-chip">[Al día]</span>
-          @for (a of s.actividades; track a.id) {
-            <span>{{ a.nombre }}</span>
-          }
-          <a class="accion" [routerLink]="['/cobros', s.id]">Cobrar</a>
-        </li>
-      } @empty {
-        <li class="vacio">No hay socios al día</li>
-      }
-    </ul>
-
-    <h3>Con deuda</h3>
-    <ul>
-      @for (s of conDeuda(); track s.id) {
-        <li>
-          <a [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
-          <span class="deuda-chip">[Con deuda]</span>
-          <span class="mora">{{ etiquetaMora(s) }}</span>
-          @for (a of s.actividades; track a.id) {
-            <span>{{ a.nombre }}</span>
-          }
-          <a class="accion" [routerLink]="['/cobros', s.id]">Cobrar</a>
-        </li>
-      } @empty {
-        <li class="vacio">No hay socios con deuda</li>
-      }
-    </ul>
+  @if (dashboard(); as d) {
+    <div class="resumen" role="group" aria-label="Resumen por estado">
+      <button
+        type="button"
+        class="contador"
+        [attr.aria-pressed]="filtroEstado() === 'CON_DEUDA'"
+        (click)="cambiarFiltroEstado('CON_DEUDA')">
+        <strong>{{ conDeuda().length }}</strong> Con deuda
+      </button>
+      <button
+        type="button"
+        class="contador"
+        [attr.aria-pressed]="filtroEstado() === 'POR_VENCER'"
+        (click)="cambiarFiltroEstado('POR_VENCER')">
+        <strong>{{ porVencer().length }}</strong> Por vencer
+      </button>
+      <button
+        type="button"
+        class="contador"
+        [attr.aria-pressed]="filtroEstado() === 'AL_DIA'"
+        (click)="cambiarFiltroEstado('AL_DIA')">
+        <strong>{{ alDia().length }}</strong> Al día
+      </button>
+    </div>
   }
-</section>
+
+  <div class="barra">
+    <label class="buscador">
+      <span class="sr-only">Buscar por DNI o nombre</span>
+      <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+      <input type="search" [formControl]="busqueda" placeholder="Buscar por DNI o nombre" aria-label="Buscar por DNI o nombre" />
+      @if (busqueda.value) {
+        <button type="button" class="limpiar" (click)="limpiarBusqueda()" aria-label="Limpiar búsqueda">
+          <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5" />
+            <line x1="12" y1="4" x2="4" y2="12" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+      }
+    </label>
+    <label class="filtro">
+      <span class="sr-only">Filtrar por actividad</span>
+      <select (change)="cambiarFiltro($any($event.target).value)" aria-label="Filtrar por actividad">
+        <option value="">Todas las actividades</option>
+        @for (a of actividadesDisponibles(); track a.id) {
+          <option [value]="a.id">{{ a.nombre }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (cargando()) {
+    <div role="status" aria-label="Cargando socios">
+      <span class="sr-only">Cargando socios…</span>
+      <ul class="skeleton" aria-hidden="true">
+        <li></li>
+        <li></li>
+        <li></li>
+      </ul>
+    </div>
+  } @else if (error()) {
+    <div role="alert" class="alerta-error">
+      <p>No se pudo cargar el listado de socios.</p>
+      <button type="button" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (enBusqueda()) {
+    <section aria-label="Resultados de búsqueda">
+      <h2>Resultados</h2>
+      @if (busquedaFiltrada().length === 0) {
+        <p class="vacio">Sin resultados para esta búsqueda.</p>
+        <p>
+          <button type="button" (click)="limpiarBusqueda()">Limpiar búsqueda</button>
+          <a routerLink="/socios/nuevo">Nuevo Socio</a>
+        </p>
+      } @else {
+        <ng-container *ngTemplateOutlet="tabla; context: { $implicit: busquedaFiltrada(), etiqueta: 'resultados' }" />
+      }
+    </section>
+  } @else {
+    <section aria-label="Socios con deuda">
+      <h2>Con deuda · {{ conDeuda().length }}</h2>
+      @if (conDeuda().length === 0) {
+        <p class="vacio">No hay socios con deuda</p>
+      } @else {
+        <ng-container *ngTemplateOutlet="tabla; context: { $implicit: conDeuda(), etiqueta: 'con deuda' }" />
+      }
+    </section>
+
+    <section aria-label="Socios al día">
+      <h2>Al día · {{ alDia().length }}</h2>
+      @if (alDia().length === 0) {
+        <p class="vacio">No hay socios al día</p>
+      } @else {
+        <ng-container *ngTemplateOutlet="tabla; context: { $implicit: alDia(), etiqueta: 'al día' }" />
+      }
+    </section>
+  }
+
+  <ng-template #tabla let-lista let-etiqueta="etiqueta">
+    <table>
+      <caption class="sr-only">
+        Socios {{ etiqueta }}: nombre, DNI, actividad, vencimiento y acción de cobro
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Socio</th>
+          <th scope="col">Actividad</th>
+          <th scope="col">Vence</th>
+          <th scope="col"><span class="sr-only">Acción</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of lista; track s.id) {
+          <tr>
+            <td>
+              <a class="nombre" [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
+              <span class="dni">DNI {{ s.dni }}</span>
+            </td>
+            <td>
+              @if (s.actividades.length > 0) {
+                @for (a of s.actividades; track a.id) {
+                  <span class="actividad">{{ a.nombre }}</span>
+                }
+              } @else {
+                <span class="vacio">—</span>
+              }
+            </td>
+            <td>
+              @if (s.estado === 'CON_DEUDA') {
+                <span class="deuda-chip">
+                  <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path
+                      d="M8 1.5 15 14H1Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linejoin="round" />
+                    <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1.5" />
+                    <circle cx="8" cy="12" r="0.8" fill="currentColor" />
+                  </svg>
+                  Con deuda
+                </span>
+                <span class="mora">{{ etiquetaMora(s) }}</span>
+              } @else if (esPorVencer(s)) {
+                <span class="aviso-chip">
+                  <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+                    <line x1="8" y1="4.5" x2="8" y2="8" stroke="currentColor" stroke-width="1.5" />
+                    <line x1="8" y1="8" x2="10.5" y2="9.5" stroke="currentColor" stroke-width="1.5" />
+                  </svg>
+                  Por vencer · {{ formatearFecha(s.fechaLimite) }}
+                </span>
+              } @else {
+                <span>Vence {{ formatearFecha(s.fechaLimite) }}</span>
+              }
+            </td>
+            <td class="celda-accion">
+              <button
+                type="button"
+                #btnCobrar
+                [class.boton-primario]="s.estado === 'CON_DEUDA'"
+                (click)="abrirConfirmacion(s, btnCobrar)">
+                Cobrar
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </ng-template>
+
+  <dialog #dialogo (close)="alCerrarDialogo()" (keydown)="atraparTabulacion($event)" aria-labelledby="titulo-dialogo">
+    @if (socioDialogo(); as s) {
+      <h3 id="titulo-dialogo">Confirmar cobro</h3>
+      <p>
+        Registrar cobro de la cuota de <strong>{{ s.nombre }} {{ s.apellido }}</strong>
+        (DNI {{ s.dni }}).
+      </p>
+      <p>
+        Estado: <strong>{{ s.estado === 'CON_DEUDA' ? 'Con deuda' : 'Al día' }}</strong>
+        · Fecha límite: <strong>{{ formatearFecha(s.fechaLimite) }}</strong>
+        @if (s.estado === 'CON_DEUDA') {
+          <span>· {{ etiquetaMora(s) }}</span>
+        }
+      </p>
+      <div class="acciones-dialogo">
+        <button type="button" (click)="cerrarConfirmacion()">Cancelar</button>
+        <button type="button" class="boton-primario" (click)="irACobrar()">Ir a cobrar</button>
+      </div>
+    }
+  </dialog>
+</div>
