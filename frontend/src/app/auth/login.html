@@ -1,0 +1,64 @@
+<div class="login-wrapper">
+  <header class="login-header">
+    <span class="marca" aria-label="Hulk Gimnasio">HULK</span>
+    <p class="subtitulo">Panel de administración</p>
+  </header>
+
+  <section class="login-card" aria-labelledby="titulo-login">
+    <h1 id="titulo-login">Iniciar sesión</h1>
+
+    @if (error()) {
+      <p class="error" role="alert" aria-live="assertive">
+        <span aria-hidden="true">⚠</span>
+        <span>{{ error() }}</span>
+      </p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
+      <label for="username">Usuario</label>
+      <input
+        #usuarioInput
+        id="username"
+        type="text"
+        formControlName="username"
+        autocomplete="username"
+        autocapitalize="none"
+        spellcheck="false"
+        inputmode="text"
+        [attr.aria-invalid]="usuarioInvalido"
+        aria-describedby="error-usuario"
+      />
+      @if (usuarioInvalido) {
+        <p class="error-campo" id="error-usuario" role="alert">El usuario es obligatorio</p>
+      }
+
+      <label for="password">Contraseña</label>
+      <div class="campo-password">
+        <input
+          id="password"
+          [type]="mostrarPassword() ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password"
+          [attr.aria-invalid]="passwordInvalido"
+          aria-describedby="error-password"
+        />
+        <button
+          type="button"
+          class="btn-mostrar"
+          (click)="toggleMostrar()"
+          [attr.aria-pressed]="mostrarPassword()"
+          [attr.aria-label]="mostrarPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+        >
+          {{ mostrarPassword() ? 'Ocultar' : 'Mostrar' }}
+        </button>
+      </div>
+      @if (passwordInvalido) {
+        <p class="error-campo" id="error-password" role="alert">La contraseña es obligatoria</p>
+      }
+
+      <button type="submit" class="btn-login" [disabled]="cargando()">
+        {{ cargando() ? 'Ingresando…' : 'Ingresar' }}
+      </button>
+    </form>
+  </section>
+</div>

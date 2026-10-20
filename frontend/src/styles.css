@@ -1,1 +1,283 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --fondo: #121212;
+  --superficie: #1a1a1a;
+  --superficie-elevada: #242424;
+  --borde: #2a2a2a;
+  --texto: #f5f5f5;
+  --texto-secundario: #b9d8b9;
+  --verde: #4caf50;
+  --verde-marca: #4caf50;
+  --verde-oscuro: #2e7d32;
+  --verde-neon: #39ff14;
+  --alerta: #ff5252;
+  --alerta-suave: #ff8a80;
+  --aviso: #ff9800;
+  --exito: #81c784;
+  --radio: 12px;
+  --fs-h1: 1.875rem;
+  --fs-h2: 1.1875rem;
+  --fs-cuerpo: 0.9375rem;
+  --fs-etiqueta: 0.8125rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--fondo);
+  color: var(--texto);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-cuerpo);
+  line-height: 1.5;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+::selection {
+  background-color: var(--verde-oscuro);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--fondo);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--verde-oscuro);
+  border-radius: 5px;
+}
+
+a {
+  color: var(--verde-marca);
+  transition: color 150ms ease-out;
+}
+a:hover {
+  color: var(--verde-marca);
+}
+
+:focus-visible {
+  outline: 2px solid var(--verde-marca);
+  outline-offset: 2px;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.75rem 1.5rem;
+  background-color: #0d0d0d;
+  border-bottom: 1px solid var(--borde);
+}
+
+.marca {
+  color: var(--verde-marca);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-right: 0.5rem;
+}
+
+nav a {
+  color: var(--texto);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.5rem;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  transition: color 150ms ease-out;
+}
+
+nav a:hover {
+  color: var(--verde-marca);
+}
+
+nav a.active {
+  color: var(--verde-marca);
+  font-weight: 700;
+  border-bottom: 2px solid var(--verde-marca);
+}
+
+main {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+section {
+  background-color: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+section h2 {
+  margin-top: 0;
+  color: var(--verde);
+}
+
+section h3 {
+  color: var(--texto);
+  margin-bottom: 0.5rem;
+}
+
+button {
+  background-color: var(--verde-marca);
+  color: #0d0d0d;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+
+button:hover:not(:disabled) {
+  background-color: #63c667;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button[type='button'],
+.btn-secundario {
+  background-color: transparent;
+  border: 1px solid #6e6e6e;
+  color: var(--texto);
+}
+
+button[type='button']:hover,
+.btn-secundario:hover {
+  background-color: transparent;
+  border-color: var(--texto);
+  color: var(--texto);
+}
+
+.btn-primario {
+  background-color: var(--verde-marca);
+  color: #0d0d0d;
+  border: none;
+}
+
+button.btn-primario:hover:not(:disabled) {
+  background-color: #63c667;
+  color: #0d0d0d;
+}
+
+.btn-peligro {
+  background-color: transparent;
+  border: 1px solid var(--alerta);
+  color: var(--alerta-suave);
+}
+
+button.btn-peligro:hover {
+  background-color: rgba(255, 82, 82, 0.12);
+  border-color: var(--alerta);
+  color: var(--alerta-suave);
+}
+
+input,
+select {
+  background-color: var(--superficie-elevada);
+  color: var(--texto);
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 0.5rem;
+  caret-color: var(--verde-neon);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--verde-marca);
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.35);
+  outline: none;
+}
+
+input::placeholder {
+  color: var(--texto-secundario);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+.error {
+  color: var(--alerta-suave);
+  background-color: rgba(255, 82, 82, 0.12);
+  border: 1px solid var(--alerta);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+}
+
+.exito {
+  color: var(--exito);
+  font-weight: 600;
+}
+
+.vacio {
+  color: #8a8a8a;
+  font-style: italic;
+}
+
+.mora {
+  color: #ffd54f;
+  background-color: rgba(255, 152, 0, 0.14);
+  border: 1px solid var(--aviso);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.deuda-chip {
+  color: #ffffff;
+  background-color: var(--alerta);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ok-chip {
+  color: #0d0d0d;
+  background-color: var(--verde-marca);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none;
+  }
+}

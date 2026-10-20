@@ -1,31 +1,112 @@
-<section>
-  <h2>Configuración de precios</h2>
+<div class="pagina">
+  <h1>Configuración de precios</h1>
 
-  @if (exito()) {
-    <p class="exito" role="status">{{ exito() }}</p>
+  @if (cargando()) {
+    <div role="status" aria-label="Cargando precios">
+      <span class="sr-only">Cargando precios…</span>
+      <ul class="skeleton" aria-hidden="true">
+        <li></li>
+        <li></li>
+      </ul>
+    </div>
+  } @else if (errorCarga()) {
+    <div role="alert" class="alerta-error">
+      <p>No se pudieron cargar los precios.</p>
+      <button type="button" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else {
+    @if (exito()) {
+      <p class="exito" role="status">{{ exito() }}</p>
+    }
+
+    <section aria-label="Valores de cuota y recargo">
+      <div class="fila">
+        <div class="concepto">
+          <h2>Cuota</h2>
+          <p class="ayuda" id="ayuda-cuota">
+            Monto base de cada cuota mensual. Debe ser mayor a 0. Rige para los cobros que se
+            registren desde ahora; no modifica comprobantes ya emitidos.
+          </p>
+        </div>
+        <p class="valor" aria-label="Cuota actual">{{ formatear(cuotaActual()) }}</p>
+        <form [formGroup]="formCuota" (ngSubmit)="pedirConfirmarCuota(btnCuota)">
+          @if (errorCuota()) {
+            <p class="error" role="alert">{{ errorCuota() }}</p>
+          }
+          <label>
+            Nuevo valor
+            <span class="campo-moneda">
+              <span aria-hidden="true">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                inputmode="decimal"
+                formControlName="valor"
+                aria-describedby="ayuda-cuota error-cuota"
+                [attr.aria-invalid]="cuotaInvalida" />
+            </span>
+          </label>
+          @if (cuotaInvalida) {
+            <p class="error-campo" id="error-cuota" role="alert">Debe ser mayor a 0</p>
+          }
+          <button
+            #btnCuota
+            type="submit"
+            [disabled]="!puedeGuardarCuota()"
+            [attr.aria-label]="'Guardar cuota'">
+            {{ guardando() === 'cuota' ? 'Guardando…' : 'Guardar cuota' }}
+          </button>
+        </form>
+      </div>
+
+      <div class="fila">
+        <div class="concepto">
+          <h2>Recargo semanal</h2>
+          <p class="ayuda" id="ayuda-recargo">
+            Monto fijo que se suma por cada semana de atraso cuando se cobra fuera de término.
+            Debe ser mayor o igual a 0. Rige para los cobros que se registren desde ahora.
+          </p>
+        </div>
+        <p class="valor" aria-label="Recargo actual">{{ formatear(recargoActual()) }}</p>
+        <form [formGroup]="formRecargo" (ngSubmit)="pedirConfirmarRecargo(btnRecargo)">
+          @if (errorRecargo()) {
+            <p class="error" role="alert">{{ errorRecargo() }}</p>
+          }
+          <label>
+            Nuevo valor
+            <span class="campo-moneda">
+              <span aria-hidden="true">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                inputmode="decimal"
+                formControlName="valor"
+                aria-describedby="ayuda-recargo error-recargo"
+                [attr.aria-invalid]="recargoInvalido" />
+            </span>
+          </label>
+          @if (recargoInvalido) {
+            <p class="error-campo" id="error-recargo" role="alert">Debe ser mayor o igual a 0</p>
+          }
+          <button
+            #btnRecargo
+            type="submit"
+            [disabled]="!puedeGuardarRecargo()"
+            [attr.aria-label]="'Guardar recargo'">
+            {{ guardando() === 'recargo' ? 'Guardando…' : 'Guardar recargo' }}
+          </button>
+        </form>
+      </div>
+    </section>
   }
 
-  <h3>Cuota (actual: {{ cuotaActual() ?? '—' }})</h3>
-  @if (errorCuota()) {
-    <p class="error" role="alert">{{ errorCuota() }}</p>
-  }
-  <form [formGroup]="formCuota" (ngSubmit)="guardarCuota()">
-    <label>
-      Nuevo valor (mayor a 0)
-      <input type="number" step="0.01" min="0.01" formControlName="valor" />
-    </label>
-    <button type="submit">Guardar cuota</button>
-  </form>
-
-  <h3>Recargo semanal (actual: {{ recargoActual() ?? '—' }})</h3>
-  @if (errorRecargo()) {
-    <p class="error" role="alert">{{ errorRecargo() }}</p>
-  }
-  <form [formGroup]="formRecargo" (ngSubmit)="guardarRecargo()">
-    <label>
-      Nuevo valor (mayor o igual a 0)
-      <input type="number" step="0.01" min="0" formControlName="valor" />
-    </label>
-    <button type="submit">Guardar recargo</button>
-  </form>
-</section>
+  <app-confirmar-dialogo
+    [titulo]="tituloConfirmacion()"
+    [mensaje]="'El nuevo valor se usará en los próximos cobros.'"
+    [textoConfirmar]="'Guardar'"
+    [variante]="'primario'"
+    (confirmado)="confirmarGuardado()"
+    (cancelado)="pendiente.set(null)" />
+</div>

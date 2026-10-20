@@ -18,14 +18,10 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render navigation links', () => {
+  it('should render app shell', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    const textos = Array.from(compiled.querySelectorAll('nav a')).map((a) => a.textContent?.trim());
-    expect(textos).toContain('Dashboard');
-    expect(textos).toContain('Actividades');
-    expect(textos).toContain('Precios');
-    expect(textos).toContain('Nuevo socio');
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 });

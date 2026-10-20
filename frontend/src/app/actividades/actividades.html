@@ -1,47 +1,119 @@
-<section>
-  <h2>Actividades</h2>
+<div class="pagina">
+  <h1>Actividades</h1>
 
-  @if (error()) {
-    <p class="error" role="alert">{{ error() }}</p>
-  }
+  <section aria-label="Nueva actividad">
+    <h2>{{ editandoId() === null ? 'Nueva actividad' : 'Editar actividad' }}</h2>
 
-  <form [formGroup]="form" (ngSubmit)="guardar()">
-    <label>
-      Nombre
-      <input type="text" formControlName="nombre" />
-    </label>
-    <label>
-      Descripción
-      <input type="text" formControlName="descripcion" />
-    </label>
-    <button type="submit">{{ editandoId() === null ? 'Crear' : 'Guardar' }}</button>
-    @if (editandoId() !== null) {
-      <button type="button" (click)="cancelarEdicion()">Cancelar</button>
+    @if (error()) {
+      <p class="error" role="alert">
+        {{ error() }}
+        <button type="button" (click)="cargar()">Reintentar</button>
+      </p>
     }
-  </form>
+    @if (exito()) {
+      <p class="exito" role="status">{{ exito() }}</p>
+    }
 
-  @if (cargando()) {
-    <p>Cargando…</p>
-  } @else {
-    <ul>
-      @for (a of actividades(); track a.id) {
-        <li>
-          <strong>{{ a.nombre }}</strong>
-          <span>[{{ a.estado }}]</span>
-          @if (a.descripcion) {
-            <span> — {{ a.descripcion }}</span>
-          }
-          <button type="button" (click)="editar(a)">Editar</button>
-          @if (a.estado === 'ACTIVA') {
-            <button type="button" (click)="inhabilitar(a)">Inhabilitar</button>
-          } @else {
-            <button type="button" (click)="habilitar(a)">Habilitar</button>
-          }
-          <button type="button" (click)="eliminar(a)">Eliminar</button>
-        </li>
-      } @empty {
-        <li>No hay actividades cargadas</li>
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <label>
+        Nombre (obligatorio)
+        <input
+          #nombreInput
+          type="text"
+          formControlName="nombre"
+          placeholder="Ej: Musculación"
+          [attr.aria-invalid]="nombreInvalido"
+          aria-describedby="error-nombre" />
+        @if (nombreInvalido) {
+          <span class="error-campo" id="error-nombre" role="alert">El nombre es obligatorio</span>
+        }
+      </label>
+      <label>
+        Descripción (opcional)
+        <input type="text" formControlName="descripcion" placeholder="Ej: Entrenamiento de fuerza" />
+      </label>
+      <button type="submit">{{ editandoId() === null ? 'Crear' : 'Guardar' }}</button>
+      @if (editandoId() !== null) {
+        <button type="button" (click)="cancelarEdicion()">Cancelar</button>
       }
-    </ul>
-  }
-</section>
+    </form>
+  </section>
+
+  <section aria-label="Listado de actividades">
+    <h2>Actividades · {{ actividades().length }}</h2>
+
+    @if (cargando()) {
+      <div role="status" aria-label="Cargando actividades">
+        <span class="sr-only">Cargando actividades…</span>
+        <ul class="skeleton" aria-hidden="true">
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+      </div>
+    } @else if (actividades().length === 0 && !error()) {
+      <p class="vacio">Todavía no hay actividades. Cree la primera con el formulario de arriba.</p>
+    } @else {
+      <table>
+        <caption class="sr-only">
+          Actividades: nombre, descripción, estado y acciones
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Actividad</th>
+            <th scope="col">Descripción</th>
+            <th scope="col">Estado</th>
+            <th scope="col"><span class="sr-only">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of actividades(); track a.id) {
+            <tr [class.inactiva]="a.estado !== 'ACTIVA'">
+              <td class="nombre">{{ a.nombre }}</td>
+              <td class="descripcion" [title]="a.descripcion ?? ''">
+                {{ a.descripcion || '—' }}
+              </td>
+              <td>
+                <span class="pill" [class.pill-inactiva]="a.estado !== 'ACTIVA'">
+                  <span class="punto" aria-hidden="true"></span>
+                  {{ a.estado === 'ACTIVA' ? 'Activa' : 'Inactiva' }}
+                </span>
+              </td>
+              <td class="celda-accion">
+                <button type="button" (click)="editar(a)" [attr.aria-label]="'Editar ' + a.nombre">
+                  Editar
+                </button>
+                @if (a.estado === 'ACTIVA') {
+                  <button
+                    type="button"
+                    (click)="inhabilitar(a)"
+                    [attr.aria-label]="'Inhabilitar ' + a.nombre">
+                    Inhabilitar
+                  </button>
+                } @else {
+                  <button type="button" (click)="habilitar(a)" [attr.aria-label]="'Habilitar ' + a.nombre">
+                    Habilitar
+                  </button>
+                }
+                <button
+                  #btnEliminar
+                  type="button"
+                  class="btn-peligro accion-peligro"
+                  (click)="pedirEliminar(a, btnEliminar)"
+                  [attr.aria-label]="'Eliminar ' + a.nombre">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <app-confirmar-dialogo
+    [titulo]="'Eliminar ' + (eliminarPendiente()?.nombre ?? '')"
+    [mensaje]="'Se eliminará la actividad de forma permanente. Esta acción no se puede deshacer.'"
+    [textoConfirmar]="'Eliminar'"
+    (confirmado)="eliminarConfirmado()" />
+</div>
