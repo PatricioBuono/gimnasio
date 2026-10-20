@@ -1,6 +1,134 @@
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.login-header {
+  text-align: center;
+}
+
+.marca {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--texto);
+}
+
+.subtitulo {
+  margin: 0.25rem 0 0;
+  font-size: var(--fs-etiqueta);
+  color: var(--texto-secundario);
+}
+
+.login-card {
+  width: min(90vw, 24rem);
+  background-color: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#titulo-login {
+  font-size: 1.375rem;
+  color: var(--texto);
+  margin: 0;
+}
+
 form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  max-width: 20rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background-color: var(--superficie-elevada);
+  color: var(--texto);
+}
+
+input[aria-invalid='true'] {
+  border-color: var(--alerta);
+}
+
+.campo-password {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.campo-password input {
+  padding-right: 5rem;
+}
+
+.btn-mostrar {
+  position: absolute;
+  right: 0.375rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--texto-secundario);
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+}
+
+.btn-mostrar:hover {
+  color: var(--texto);
+  border-color: var(--borde);
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(255, 82, 82, 0.12);
+  border: 1px solid var(--alerta);
+  color: var(--alerta-suave);
+  border-radius: 8px;
+  padding: 0.625rem 0.75rem;
+  margin: 0;
+}
+
+.error-campo {
+  color: var(--alerta-suave);
+  font-size: var(--fs-etiqueta);
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn-login {
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0.5rem;
+  background-color: var(--verde-marca);
+  color: #0d0d0d;
+  font-weight: 700;
+  border: none;
+}
+
+.btn-login:hover:not(:disabled) {
+  background-color: #63c667;
+}
+
+.btn-login:disabled {
+  opacity: 0.5;
+}
+
+@media (max-width: 360px) {
+  .login-card {
+    padding: 1.5rem;
+  }
 }

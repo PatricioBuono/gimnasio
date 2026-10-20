@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -10,9 +10,13 @@ import { AuthService } from '../core/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class Login {
+export class Login implements OnInit {
   error = signal<string | null>(null);
+  cargando = signal(false);
+  mostrarPassword = signal(false);
   form: FormGroup;
+
+  @ViewChild('usuarioInput') usuarioInput!: ElementRef<HTMLInputElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -25,17 +29,45 @@ export class Login {
     });
   }
 
+  ngOnInit(): void {
+    setTimeout(() => this.usuarioInput?.nativeElement.focus(), 0);
+  }
+
+  get usuarioInvalido(): boolean {
+    const c = this.form.get('username');
+    return !!c && c.invalid && c.touched;
+  }
+
+  get passwordInvalido(): boolean {
+    const c = this.form.get('password');
+    return !!c && c.invalid && c.touched;
+  }
+
+  toggleMostrar(): void {
+    this.mostrarPassword.update((v) => !v);
+  }
+
   ingresar(): void {
+    this.error.set(null);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    this.error.set(null);
+    this.cargando.set(true);
     const { username, password } = this.form.value;
     this.auth.login(username, password).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
-      error: (e: HttpErrorResponse) =>
-        this.error.set(e.status === 401 ? 'Usuario o contraseña inválidos' : 'No se pudo iniciar sesión'),
+      next: () => {
+        this.cargando.set(false);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (e: HttpErrorResponse) => {
+        this.cargando.set(false);
+        if (e.status === 0) {
+          this.error.set('No se pudo conectar con el servidor. Intente nuevamente.');
+          return;
+        }
+        this.error.set('Usuario o contraseña inválidos');
+      },
     });
   }
 }
