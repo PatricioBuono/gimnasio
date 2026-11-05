@@ -1,16 +1,11 @@
 import { Component, ViewChild, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { formatearMoneda } from '../core/formato';
 import { PrecioService } from '../core/precio.service';
 import { ConfirmarDialogo } from '../shared/confirmar-dialogo';
 
 type Concepto = 'cuota' | 'recargo';
-
-const formatoMoneda = new Intl.NumberFormat('es-AR', {
-  style: 'currency',
-  currency: 'ARS',
-  minimumFractionDigits: 2,
-});
 
 @Component({
   selector: 'app-precios',
@@ -53,7 +48,7 @@ export class Precios {
   }
 
   formatear(v: number | null): string {
-    return v === null ? '—' : formatoMoneda.format(v);
+    return formatearMoneda(v);
   }
 
   cargar(): void {

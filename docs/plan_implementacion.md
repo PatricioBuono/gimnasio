@@ -1,7 +1,7 @@
 # Plan de Implementación — Proyecto Gimnasio (MVP)
 
-Fuentes: `docs/Documentación Gimnasio.md` (verdad funcional), `docs/arquitectura.md` (verdad técnica), `AGENTS.md` (reglas).
-Nota de coherencia: `arquitectura.md §11` incluye `MR-US8` (filtro por actividad) en MVP; `Documentación Gimnasio.md:150` lo marca como pendiente a decidir. Se planifica como incluido según decisión aprobada del 12/10/2026. Si se revierte, quitar Fase 5 T5.3 sin afectar resto.
+Fuentes: `docs/documentacion_gimnasio.md` (verdad funcional), `docs/arquitectura.md` (verdad técnica), `AGENTS.md` (reglas).
+Nota de coherencia: `arquitectura.md §11` incluye `MR-US8` (filtro por actividad) en MVP; `documentacion_gimnasio.md:150` lo marca como pendiente a decidir. Se planifica como incluido según decisión aprobada del 12/10/2026. Si se revierte, quitar Fase 5 T5.3 sin afectar resto.
 
 Convención de tareas: `[DB]`, `[BE]`, `[FE]`, `[QA]`. Cada tarea indica dependencias y US que cubre. Sin código aún.
 

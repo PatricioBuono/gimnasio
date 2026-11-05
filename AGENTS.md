@@ -4,6 +4,7 @@
 
 Antes de escribir o modificar código para una nueva tarea, el agente DEBE leer:
 
+* `docs/INDICE.md` — Mapa de documentación, orden de lectura y reglas de convivencia (leerlo primero).
 * `docs/documentacion_gimnasio.md` — Criterios de Aceptación (Gherkin). Es la fuente de verdad funcional.
 * `docs/arquitectura.md` — Diseño del sistema aprobado. Es la fuente de verdad técnica.
 
@@ -71,6 +72,7 @@ El agente no puede marcar una tarea como "Completada" sin verificar punto por pu
 * Toda nueva regla de negocio debe tener su correspondiente test unitario en el backend (con `Clock` fijo para fechas).
 * Todo componente visual nuevo debe tener su test en Vitest.
 * Flujos críticos (búsqueda, cobro, exoneración, comprobante) deben pasar en Cypress antes de cerrar.
+* La sesión debe quedar registrada en `docs/bitacora/` y el estado de la tarea actualizado en `docs/tareas/estado.md` (usar `/cerrar-sesion`). Sin bitácora no hay cierre.
 * Sin `ddl-auto: update` en prod. Todo cambio DDL va por Flyway versionado.
 * Sin `double/float`, sin fecha real en tests, sin comprobante generado fuera de secuencia.
 
@@ -84,7 +86,7 @@ Ejecutar estas 4 revisiones antes de marcar cualquier ticket como terminado. Si 
 * DTOs para entrada/salida; entidades no se exponen directo. Validación Bean Validation en borde (DNI, montos).
 
 ### 6.2 Testing y Criterios de Aceptación
-* Cada escenario Gherkin de `docs/Documentación Gimnasio.md` tiene su test espejo: JUnit (BE) / Vitest (FE), incluyendo negativos y bordes (día 10, 7/8/14 días, motivo vacío, DNI duplicado, período duplicado, actividad inactiva).
+* Cada escenario Gherkin de `docs/documentacion_gimnasio.md` tiene su test espejo: JUnit (BE) / Vitest (FE), incluyendo negativos y bordes (día 10, 7/8/14 días, motivo vacío, DNI duplicado, período duplicado, actividad inactiva).
 * Fechas con `Clock` fijo. Flujos críticos (buscar deuda, cobrar, exonerar, comprobante) en Cypress.
 
 ### 6.3 Coherencia con la Arquitectura
@@ -94,3 +96,10 @@ Ejecutar estas 4 revisiones antes de marcar cualquier ticket como terminado. Si 
 * En cada PR simulado: endpoints protegidos por rol (`ADMIN` vs `RECEPCIONISTA`, 401/403 testeados), creación de usuarios solo `ADMIN`, sin creación pública de admins.
 * Validación de inputs (DNI normalizado, montos, motivo trim no vacío) contra inyección/errores; mapear `UNIQUE` a 409.
 * Pista de auditoría de caja verificada: `cobrado_por/exonerado_por (sub JWT) + fecha/hora + motivo`, etiqueta `Recargo Bonificado` en comprobante/historial.
+
+## 7. Memoria de Sesiones y Contexto
+
+* **Al iniciar una tarea:** leer `docs/INDICE.md`, luego `docs/tareas/estado.md` y solo la bitácora enlazada a la tarea. No cargar todo `docs/bitacora/`.
+* **Durante la sesión:** toda decisión relevante se registra en la bitácora del día con su porqué. Las decisiones arquitectónicas siguen requiriendo aprobación explícita (§1).
+* **Al cerrar:** crear o actualizar `docs/bitacora/YYYY-MM-DD-tema.md` desde `_plantilla.md`, actualizar `docs/tareas/estado.md` y, si hay documentos nuevos, `docs/INDICE.md`. Usar `/nueva-sesion` y `/cerrar-sesion`.
+* **Reglas:** append-only (no reescribir historia), sin duplicar Gherkin/arquitectura, enlaces relativos, presupuesto de tokens (índice ≤ 80 líneas, sesión ≤ 150).

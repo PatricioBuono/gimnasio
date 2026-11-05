@@ -1,59 +1,242 @@
-<section>
-  <h2>Cobro de cuota</h2>
+<div class="pagina">
+  <header class="encabezado">
+    <div class="titulo">
+      <h1>Cobro de cuota</h1>
+      <p class="subtitulo">Registrá el pago mensual y entregá el comprobante.</p>
+    </div>
+    @if (socioId !== null) {
+      <p class="contexto-socio">
+        Socio N.º {{ socioId }} · <a [routerLink]="['/socios', socioId]">Ver ficha</a>
+      </p>
+    }
+  </header>
 
-  @if (error()) {
-    <p class="error" role="alert">{{ error() }}</p>
-  }
-  @if (comprobante(); as c) {
-    <p class="exito" role="status">
-      Cobro registrado. Comprobante {{ c.numero }} — Total ${{ c.total }}
-      @if (c.etiqueta) {
-        <span>({{ c.etiqueta }})</span>
-      }
-    </p>
-  }
-
-  <form [formGroup]="form" (ngSubmit)="calcular()">
-    <label>
-      Período (AAAA-MM)
-      <input type="text" formControlName="periodo" placeholder="2026-10" />
-    </label>
-    <label>
-      Método
-      <select formControlName="metodo">
-        <option value="EFECTIVO">Efectivo</option>
-        <option value="TRANSFERENCIA">Transferencia</option>
-      </select>
-    </label>
-    <button type="submit">Calcular</button>
-  </form>
-
-  @if (vista(); as v) {
-    <h3>Desglose</h3>
-    <ul>
-      <li>Cuota: ${{ v.cuota }}</li>
-      <li>Recargo ({{ v.semanas }} semanas): ${{ v.recargo }}</li>
-      <li>Total: ${{ totalMostrado() }}</li>
-    </ul>
-
-    <label>
-      <input
-        type="checkbox"
-        [checked]="exonerado()"
-        (change)="alternarExoneracion($any($event.target).checked)" />
-      Exonerar recargo
-    </label>
-
-    @if (exonerado()) {
-      <label>
-        Motivo (obligatorio)
-        <input
-          type="text"
-          [value]="motivo()"
-          (input)="motivo.set($any($event.target).value)" />
-      </label>
+  @if (socioId === null) {
+    <div class="alerta-error" role="alert">
+      <div>
+        <p>No se indicó un socio válido.</p>
+        <a routerLink="/dashboard">Volver al listado de socios</a>
+      </div>
+    </div>
+  } @else {
+    @if (error()) {
+      <div #alertaError class="alerta-error" role="alert" tabindex="-1">
+        <p>{{ error() }}</p>
+      </div>
     }
 
-    <button type="button" class="btn-primario" (click)="pagar()" [disabled]="!puedePagar()">Registrar pago</button>
+    <div class="mesa">
+      <section class="panel operacion" aria-labelledby="titulo-operacion">
+        <h2 id="titulo-operacion">Datos del cobro</h2>
+        <p class="ayuda">
+          Cada período se cobra una vez. Si el pago es posterior al vencimiento, se suma el recargo
+          por semana.
+        </p>
+
+        <form [formGroup]="form" (ngSubmit)="calcular()" novalidate>
+          <div class="campos">
+            <div class="campo">
+              <label for="periodo">Período</label>
+              <input
+                #periodoInput
+                id="periodo"
+                type="text"
+                formControlName="periodo"
+                placeholder="AAAA-MM"
+                autocomplete="off"
+                [attr.aria-invalid]="periodoInvalido"
+                [attr.aria-describedby]="
+                  periodoInvalido ? 'ayuda-periodo error-periodo' : 'ayuda-periodo'
+                " />
+              <p class="ayuda-campo" id="ayuda-periodo">Formato AAAA-MM. Por ejemplo, 2026-11.</p>
+              @if (periodoInvalido) {
+                <p class="error-campo" id="error-periodo" role="alert">
+                  Ingresá el período con formato AAAA-MM.
+                </p>
+              }
+            </div>
+
+            <div class="campo">
+              <label for="metodo">Método de pago</label>
+              <select id="metodo" formControlName="metodo">
+                <option value="EFECTIVO">Efectivo</option>
+                <option value="TRANSFERENCIA">Transferencia</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn-secundario calcular"
+            [disabled]="calculando() || registrando()">
+            {{ calculando() ? 'Calculando…' : 'Calcular desglose' }}
+          </button>
+        </form>
+
+        @if (vista()) {
+          @if (hayRecargo()) {
+            <fieldset class="exoneracion">
+              <legend>Exoneración de recargo</legend>
+              <label class="check">
+                <input
+                  type="checkbox"
+                  [checked]="exonerado()"
+                  (change)="alternarExoneracion($any($event.target).checked)"
+                  aria-describedby="ayuda-exoneracion" />
+                <span>Exonerar el recargo de este cobro</span>
+              </label>
+              <p class="ayuda-campo" id="ayuda-exoneracion">
+                El recargo queda en cero y el total pasa a ser solo la cuota.
+              </p>
+
+              @if (exonerado()) {
+                <div class="campo motivo">
+                  <label for="motivo">Motivo</label>
+                  <input
+                    id="motivo"
+                    type="text"
+                    [value]="motivo()"
+                    (input)="alCambiarMotivo($any($event.target).value)"
+                    (blur)="motivoTocado.set(true)"
+                    [attr.aria-invalid]="motivoInvalido"
+                    [attr.aria-describedby]="
+                      motivoInvalido ? 'ayuda-motivo error-motivo' : 'ayuda-motivo'
+                    " />
+                  <p class="ayuda-campo" id="ayuda-motivo">
+                    Queda registrado con tu usuario y la fecha del cobro.
+                  </p>
+                  @if (motivoInvalido) {
+                    <p class="error-campo" id="error-motivo" role="alert">
+                      Ingresá el motivo para continuar.
+                    </p>
+                  } @else if (!motivo().trim()) {
+                    <p class="ayuda-campo pendiente">Sin motivo no se puede registrar el pago.</p>
+                  }
+                </div>
+              }
+            </fieldset>
+          }
+        }
+      </section>
+
+      <section
+        class="panel ticket"
+        [attr.aria-busy]="calculando() || registrando()"
+        aria-labelledby="titulo-ticket">
+        @if (comprobante(); as c) {
+          <p class="ticket-exito" role="status">Cobro registrado</p>
+
+          <h2 #tituloComprobante id="titulo-ticket" tabindex="-1">
+            Comprobante <span class="numero">{{ c.numero }}</span>
+          </h2>
+
+          <dl class="lineas">
+            <div class="linea">
+              <dt>Período</dt>
+              <dd>{{ c.periodo }}</dd>
+            </div>
+            <div class="linea">
+              <dt>Método</dt>
+              <dd>{{ metodoTexto(c.metodo) }}</dd>
+            </div>
+            <div class="linea">
+              <dt>Cuota</dt>
+              <dd>{{ formatear(c.cuota) }}</dd>
+            </div>
+            @if (c.recargo > 0) {
+              <div class="linea">
+                <dt>Recargo ({{ semanasTexto(c.semanas) }})</dt>
+                <dd>
+                  @if (c.etiqueta) {
+                    <span class="tachado">{{ formatear(c.recargo) }}</span>
+                  } @else {
+                    {{ formatear(c.recargo) }}
+                  }
+                </dd>
+              </div>
+            }
+            <div class="linea total">
+              <dt>Total</dt>
+              <dd>{{ formatear(c.total) }}</dd>
+            </div>
+          </dl>
+
+          <p class="vencimiento">Vence el {{ fecha(c.fechaLimite) }}</p>
+
+          @if (c.etiqueta) {
+            <p class="sello">{{ c.etiqueta }}</p>
+          }
+
+          <div class="acciones-ticket">
+            <a [routerLink]="['/socios', c.socioId]">Ver ficha del socio</a>
+            <button type="button" class="btn-secundario" (click)="nuevoCobro()">
+              Registrar otro cobro
+            </button>
+          </div>
+        } @else {
+          <h2 id="titulo-ticket">Desglose</h2>
+
+          @if (calculando()) {
+            <div class="ticket-vacio" role="status">
+              <p>Calculando el desglose…</p>
+            </div>
+          } @else if (vista(); as v) {
+            <dl class="lineas">
+              <div class="linea">
+                <dt>Período</dt>
+                <dd>{{ periodoActual() }}</dd>
+              </div>
+              <div class="linea">
+                <dt>Cuota</dt>
+                <dd>{{ formatear(v.cuota) }}</dd>
+              </div>
+              <div class="linea">
+                <dt>Recargo ({{ semanasTexto(v.semanas) }})</dt>
+                <dd>
+                  @if (exonerado()) {
+                    <span class="tachado">{{ formatear(v.recargo) }}</span>
+                  } @else {
+                    {{ formatear(v.recargo) }}
+                  }
+                </dd>
+              </div>
+              <div class="linea total">
+                <dt>Total</dt>
+                <dd>{{ formatear(totalMostrado()) }}</dd>
+              </div>
+            </dl>
+
+            <p class="vencimiento">Vence el {{ fecha(v.fechaLimite) }} · {{ etiquetaAtraso(v) }}</p>
+
+            @if (exonerado()) {
+              <p class="sello">Recargo Bonificado</p>
+            }
+
+            <button
+              type="button"
+              class="btn-primario registrar"
+              (click)="pagar()"
+              [disabled]="!puedePagar()"
+              aria-describedby="total-registrar">
+              {{ registrando() ? 'Registrando…' : 'Registrar pago' }}
+            </button>
+            <p class="ayuda-campo total-registrar" id="total-registrar">
+              Se cobrará {{ formatear(totalMostrado()) }} por el período {{ periodoActual() }}.
+            </p>
+
+            @if (exonerado() && !motivo().trim()) {
+              <p class="ayuda-campo pendiente">
+                Ingresá el motivo de la exoneración para habilitar el registro.
+              </p>
+            }
+          } @else {
+            <div class="ticket-vacio">
+              <p class="vacio">Sin desglose todavía.</p>
+              <p>Elegí período y método, después calculá el desglose.</p>
+            </div>
+          }
+        }
+      </section>
+    </div>
   }
-</section>
+</div>
