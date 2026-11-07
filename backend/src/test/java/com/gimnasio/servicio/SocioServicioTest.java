@@ -15,6 +15,9 @@ import com.gimnasio.entidad.Actividad;
 import com.gimnasio.entidad.EstadoActividad;
 import com.gimnasio.entidad.Socio;
 import com.gimnasio.entidad.SocioActividad;
+import com.gimnasio.excepcion.ConflictoException;
+import com.gimnasio.excepcion.RecursoNoEncontradoException;
+import com.gimnasio.excepcion.SolicitudInvalidaException;
 import com.gimnasio.repositorio.ActividadRepositorio;
 import com.gimnasio.repositorio.SocioActividadRepositorio;
 import com.gimnasio.repositorio.SocioRepositorio;
@@ -29,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class SocioServicioTest {
@@ -64,20 +66,20 @@ class SocioServicioTest {
   void alta_duplicado_bloquea409() {
     when(socios.existsByDni("123")).thenReturn(true);
 
-    ResponseStatusException e = assertThrows(ResponseStatusException.class,
+    ConflictoException e = assertThrows(ConflictoException.class,
         () -> servicio.alta(new SocioRequest("123", "Juan", "Pérez")));
-    assertEquals(409, e.getStatusCode().value());
+    assertEquals("El DNI ya está registrado", e.getMessage());
     verify(socios, never()).save(any());
   }
 
   @Test
   void alta_datosIncompletos_bloquea400() {
-    assertEquals(400, assertThrows(ResponseStatusException.class,
-        () -> servicio.alta(new SocioRequest("", "Juan", "Pérez"))).getStatusCode().value());
-    assertEquals(400, assertThrows(ResponseStatusException.class,
-        () -> servicio.alta(new SocioRequest("123", "  ", "Pérez"))).getStatusCode().value());
-    assertEquals(400, assertThrows(ResponseStatusException.class,
-        () -> servicio.alta(new SocioRequest("ABC", "Juan", "Pérez"))).getStatusCode().value());
+    assertThrows(SolicitudInvalidaException.class,
+        () -> servicio.alta(new SocioRequest("", "Juan", "Pérez")));
+    assertThrows(SolicitudInvalidaException.class,
+        () -> servicio.alta(new SocioRequest("123", "  ", "Pérez")));
+    assertThrows(SolicitudInvalidaException.class,
+        () -> servicio.alta(new SocioRequest("ABC", "Juan", "Pérez")));
   }
 
   @Test
@@ -98,8 +100,8 @@ class SocioServicioTest {
   @Test
   void asignar_socioInexistente_bloquea404() {
     when(socios.findById(9)).thenReturn(Optional.empty());
-    assertEquals(404, assertThrows(ResponseStatusException.class,
-        () -> servicio.asignarActividades(9, new AsignacionRequest(List.of(1)))).getStatusCode().value());
+    assertThrows(RecursoNoEncontradoException.class,
+        () -> servicio.asignarActividades(9, new AsignacionRequest(List.of(1))));
   }
 
   @Test
@@ -108,9 +110,8 @@ class SocioServicioTest {
     when(socios.findById(1)).thenReturn(Optional.of(socio));
     when(actividades.findById(2)).thenReturn(Optional.of(actividad(2, "Yoga", EstadoActividad.INHABILITADA)));
 
-    ResponseStatusException e = assertThrows(ResponseStatusException.class,
+    assertThrows(SolicitudInvalidaException.class,
         () -> servicio.asignarActividades(1, new AsignacionRequest(List.of(2))));
-    assertEquals(400, e.getStatusCode().value());
     verify(asignaciones, never()).save(any());
   }
 
@@ -120,8 +121,8 @@ class SocioServicioTest {
     when(socios.findById(1)).thenReturn(Optional.of(socio));
     when(actividades.findById(7)).thenReturn(Optional.empty());
 
-    assertEquals(404, assertThrows(ResponseStatusException.class,
-        () -> servicio.asignarActividades(1, new AsignacionRequest(List.of(7)))).getStatusCode().value());
+    assertThrows(RecursoNoEncontradoException.class,
+        () -> servicio.asignarActividades(1, new AsignacionRequest(List.of(7))));
   }
 
   @Test

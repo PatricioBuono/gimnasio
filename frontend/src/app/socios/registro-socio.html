@@ -1,29 +1,124 @@
-<section>
-  <h2>Nuevo socio</h2>
+<div class="pagina">
+  <header class="encabezado">
+    <div class="titular">
+      <p class="contexto"><span class="pulso" aria-hidden="true"></span> Recepción Hulk</p>
+      <h1>Nuevo socio</h1>
+    </div>
+  </header>
 
-  @if (error()) {
-    <p class="error" role="alert">{{ error() }}</p>
-  }
-  @if (creado(); as s) {
-    <p class="exito" role="status">
-      Socio {{ s.nombre }} {{ s.apellido }} registrado.
-      <a [routerLink]="['/socios', s.id]">Ver ficha</a>
-    </p>
-  }
+  <div class="mostrador">
+    <section class="alta" aria-labelledby="titulo-alta">
+      <header class="alta-encabezado">
+        <h2 id="titulo-alta">Datos del socio</h2>
+      </header>
 
-  <form [formGroup]="form" (ngSubmit)="guardar()">
-    <label>
-      DNI
-      <input type="text" formControlName="dni" />
-    </label>
-    <label>
-      Nombre
-      <input type="text" formControlName="nombre" />
-    </label>
-    <label>
-      Apellido
-      <input type="text" formControlName="apellido" />
-    </label>
-    <button type="submit">Registrar</button>
-  </form>
-</section>
+      <div class="alta-cuerpo">
+        @if (error()) {
+          <div class="alerta alerta-error" role="alert">
+            <p>{{ error() }}</p>
+          </div>
+        }
+        @if (creado(); as s) {
+          <div class="alerta alerta-exito" role="status">
+            <p>Socio {{ s.nombre }} {{ s.apellido }} registrado.</p>
+            <a [routerLink]="['/socios', s.id]">Ver ficha</a>
+          </div>
+        }
+
+        <p class="form-nota">Todos los campos son obligatorios.</p>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="campos">
+            <div class="campo">
+              <label for="dni">DNI</label>
+              <input
+                id="dni"
+                type="text"
+                formControlName="dni"
+                autocomplete="off"
+                spellcheck="false"
+                maxlength="15"
+                placeholder="Ej. 34.567.890"
+                required
+                [attr.aria-invalid]="errorDni ? 'true' : null"
+                [attr.aria-describedby]="errorDni ? 'ayuda-dni error-dni' : 'ayuda-dni'"
+              />
+              <p class="ayuda-campo" id="ayuda-dni">Podés usar puntos o espacios.</p>
+              @if (errorDni; as mensaje) {
+                <p class="error-campo" id="error-dni" role="alert">{{ mensaje }}</p>
+              }
+            </div>
+
+            <div class="campo">
+              <label for="nombre">Nombre</label>
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                autocomplete="given-name"
+                autocapitalize="words"
+                required
+                [attr.aria-invalid]="errorNombre ? 'true' : null"
+                [attr.aria-describedby]="errorNombre ? 'error-nombre' : null"
+              />
+              @if (errorNombre; as mensaje) {
+                <p class="error-campo" id="error-nombre" role="alert">{{ mensaje }}</p>
+              }
+            </div>
+
+            <div class="campo">
+              <label for="apellido">Apellido</label>
+              <input
+                id="apellido"
+                type="text"
+                formControlName="apellido"
+                autocomplete="family-name"
+                autocapitalize="words"
+                required
+                [attr.aria-invalid]="errorApellido ? 'true' : null"
+                [attr.aria-describedby]="errorApellido ? 'error-apellido' : null"
+              />
+              @if (errorApellido; as mensaje) {
+                <p class="error-campo" id="error-apellido" role="alert">{{ mensaje }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="acciones-form">
+            <button type="submit" class="btn-registrar">Registrar socio</button>
+            <a class="volver" routerLink="/dashboard">Volver al tablero</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <aside class="credencial" aria-label="Vista previa de la credencial">
+      <p class="credencial-rotulo">Vista previa</p>
+
+      <div class="credencial-tarjeta" aria-hidden="true">
+        <div class="credencial-top">
+          <p class="credencial-marca">Hulk<span>Gimnasio</span></p>
+          <span class="credencial-tipo">Socio</span>
+        </div>
+
+        <div class="credencial-cuerpo">
+          <div class="credencial-foto">{{ inicialesVista }}</div>
+          <div class="credencial-datos">
+            <p class="credencial-nombre">{{ nombreCompletoVista || 'Nombre y apellido' }}</p>
+            <p class="credencial-dni">DNI {{ dniVista }}</p>
+          </div>
+        </div>
+
+        <div class="credencial-pie">
+          <span>Recepción</span>
+          <span>Hulk Gimnasio</span>
+        </div>
+      </div>
+
+      <p class="credencial-ayuda">
+        La ficha se crea con estos datos. Después podés asignar actividades y registrar el primer
+        cobro.
+      </p>
+    </aside>
+  </div>
+</div>

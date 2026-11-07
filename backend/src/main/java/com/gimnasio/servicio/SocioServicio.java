@@ -9,6 +9,9 @@ import com.gimnasio.entidad.Actividad;
 import com.gimnasio.entidad.EstadoActividad;
 import com.gimnasio.entidad.Socio;
 import com.gimnasio.entidad.SocioActividad;
+import com.gimnasio.excepcion.ConflictoException;
+import com.gimnasio.excepcion.RecursoNoEncontradoException;
+import com.gimnasio.excepcion.SolicitudInvalidaException;
 import com.gimnasio.repositorio.ActividadRepositorio;
 import com.gimnasio.repositorio.SocioActividadRepositorio;
 import com.gimnasio.repositorio.SocioRepositorio;
@@ -18,10 +21,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class SocioServicio {
@@ -45,7 +46,7 @@ public class SocioServicio {
     String nombre = obligatorio(request.nombre(), "El nombre es obligatorio").trim();
     String apellido = obligatorio(request.apellido(), "El apellido es obligatorio").trim();
     if (socios.existsByDni(dni)) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "El DNI ya está registrado");
+      throw new ConflictoException("El DNI ya está registrado");
     }
     Socio guardado = socios.save(new Socio(dni, nombre, apellido, OffsetDateTime.now(reloj)));
     return new SocioResponse(guardado.getId(), guardado.getDni(), guardado.getNombre(), guardado.getApellido());
@@ -54,15 +55,14 @@ public class SocioServicio {
   @Transactional
   public FichaSocioResponse asignarActividades(Integer socioId, AsignacionRequest request) {
     Socio socio = socios.findById(socioId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Socio no encontrado"));
+        .orElseThrow(() -> new RecursoNoEncontradoException("Socio no encontrado"));
     Set<Integer> ids = new LinkedHashSet<>(request.actividadIds());
     List<Actividad> seleccionadas = new ArrayList<>();
     for (Integer id : ids) {
       Actividad actividad = actividades.findById(id)
-          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Actividad no encontrada: " + id));
+          .orElseThrow(() -> new RecursoNoEncontradoException("Actividad no encontrada: " + id));
       if (actividad.getEstado() != EstadoActividad.ACTIVA) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "La actividad no está activa: " + actividad.getNombre());
+        throw new SolicitudInvalidaException("La actividad no está activa: " + actividad.getNombre());
       }
       seleccionadas.add(actividad);
     }
@@ -76,28 +76,28 @@ public class SocioServicio {
   @Transactional(readOnly = true)
   public FichaSocioResponse ficha(Integer socioId) {
     Socio socio = socios.findById(socioId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Socio no encontrado"));
+        .orElseThrow(() -> new RecursoNoEncontradoException("Socio no encontrado"));
     List<Actividad> vinculadas = asignaciones.findBySocioId(socioId).stream()
         .map(a -> actividades.findById(a.getActividadId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Actividad no encontrada")))
+            .orElseThrow(() -> new RecursoNoEncontradoException("Actividad no encontrada")))
         .toList();
     return ficha(socio, vinculadas);
   }
 
   private String normalizarDni(String dni) {
     if (dni == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El DNI es obligatorio");
+      throw new SolicitudInvalidaException("El DNI es obligatorio");
     }
     String limpio = dni.replace(".", "").replace(" ", "");
     if (limpio.isEmpty() || !limpio.matches("[0-9]+")) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "DNI con formato inválido");
+      throw new SolicitudInvalidaException("DNI con formato inválido");
     }
     return limpio;
   }
 
   private String obligatorio(String valor, String mensaje) {
     if (valor == null || valor.trim().isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, mensaje);
+      throw new SolicitudInvalidaException(mensaje);
     }
     return valor;
   }

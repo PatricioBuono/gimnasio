@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.gimnasio.dto.PrecioResponse;
 import com.gimnasio.entidad.ParametroPrecio;
+import com.gimnasio.excepcion.SolicitudInvalidaException;
 import com.gimnasio.repositorio.ParametroPrecioRepositorio;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class PrecioServicioTest {
@@ -49,9 +49,8 @@ class PrecioServicioTest {
   @Test
   void actualizarCuota_ceroNegativoNulo_bloquea400() {
     for (BigDecimal v : new BigDecimal[]{null, BigDecimal.ZERO, new BigDecimal("-1")}) {
-      ResponseStatusException e = assertThrows(ResponseStatusException.class,
+      assertThrows(SolicitudInvalidaException.class,
           () -> servicio.actualizarCuota(v));
-      assertEquals(400, e.getStatusCode().value());
     }
     verify(parametros, never()).findById("CUOTA");
   }
@@ -68,9 +67,8 @@ class PrecioServicioTest {
   @Test
   void actualizarRecargo_negativoONulo_bloquea400() {
     for (BigDecimal v : new BigDecimal[]{null, new BigDecimal("-0.01")}) {
-      ResponseStatusException e = assertThrows(ResponseStatusException.class,
+      assertThrows(SolicitudInvalidaException.class,
           () -> servicio.actualizarRecargo(v));
-      assertEquals(400, e.getStatusCode().value());
     }
   }
 }

@@ -3,6 +3,7 @@
   --superficie: #1a1a1a;
   --superficie-elevada: #242424;
   --borde: #2a2a2a;
+  --borde-control: #757575;
   --texto: #f5f5f5;
   --texto-secundario: #b9d8b9;
   --verde: #4caf50;
@@ -148,6 +149,7 @@ button {
   border: none;
   border-radius: 8px;
   padding: 0.5rem 1rem;
+  font: inherit;
   font-weight: 700;
   cursor: pointer;
   transition: background-color 150ms ease-out;
@@ -176,6 +178,7 @@ button[type='button']:hover,
   color: var(--texto);
 }
 
+button.btn-primario,
 .btn-primario {
   background-color: var(--verde-marca);
   color: #0d0d0d;
@@ -187,6 +190,7 @@ button.btn-primario:hover:not(:disabled) {
   color: #0d0d0d;
 }
 
+button.btn-peligro,
 .btn-peligro {
   background-color: transparent;
   border: 1px solid var(--alerta);
@@ -203,9 +207,10 @@ input,
 select {
   background-color: var(--superficie-elevada);
   color: var(--texto);
-  border: 1px solid #444;
+  border: 1px solid var(--borde-control);
   border-radius: 8px;
   padding: 0.5rem;
+  font: inherit;
   caret-color: var(--verde-neon);
 }
 

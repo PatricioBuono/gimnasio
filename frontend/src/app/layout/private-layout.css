@@ -1,31 +1,104 @@
+:host {
+  display: block;
+}
+
 nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  background-color: var(--superficie);
-  border-bottom: 1px solid var(--borde);
+  gap: 1.5rem;
+  min-height: 4rem;
+  padding: 0.5rem 1.5rem;
+  background-color: rgba(13, 13, 13, 0.96);
+  border-bottom: 1px solid #2b332a;
+  backdrop-filter: blur(10px);
 }
 
-.marca {
-  font-weight: 700;
-  letter-spacing: 0.08em;
+nav a.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.75rem;
   margin-right: auto;
-}
-
-nav a {
+  padding: 0.25rem 0;
+  border-bottom: 0;
+  color: var(--texto);
   text-decoration: none;
-  color: var(--texto-secundario);
-  padding: 0.5rem 0.75rem;
-  border-bottom: 2px solid transparent;
 }
 
-nav a.active {
+.marca-imagen {
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border: 1px solid #2b332a;
+  border-radius: 4px;
+  background-color: var(--verde-marca);
+  object-fit: cover;
+  object-position: center top;
+}
+
+.marca-texto {
+  display: flex;
+  flex-direction: column;
+  color: var(--texto);
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.marca-sub {
+  margin-top: 0.25rem;
+  color: var(--texto-secundario);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+nav a.marca.active .marca-texto {
+  color: var(--verde-marca);
+}
+
+nav a.enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.125rem;
+  border-bottom: 2px solid transparent;
+  color: var(--texto);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+nav a.enlace:hover {
+  color: var(--verde-marca);
+}
+
+nav a.enlace.active {
+  border-bottom-color: var(--verde-marca);
   color: var(--verde-marca);
   font-weight: 700;
-  border-bottom-color: var(--verde-marca);
 }
 
 main {
-  padding: 1rem;
+  padding: 1.5rem;
+}
+
+@media (max-width: 560px) {
+  nav {
+    gap: 1rem;
+    padding: 0.5rem 0.875rem;
+  }
+
+  .marca-sub {
+    display: none;
+  }
+
+  nav a.enlace {
+    padding: 0.5rem;
+  }
 }

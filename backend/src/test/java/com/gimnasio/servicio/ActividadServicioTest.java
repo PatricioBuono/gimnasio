@@ -11,6 +11,9 @@ import com.gimnasio.dto.ActividadRequest;
 import com.gimnasio.dto.ActividadResponse;
 import com.gimnasio.entidad.Actividad;
 import com.gimnasio.entidad.EstadoActividad;
+import com.gimnasio.excepcion.ConflictoException;
+import com.gimnasio.excepcion.RecursoNoEncontradoException;
+import com.gimnasio.excepcion.SolicitudInvalidaException;
 import com.gimnasio.repositorio.ActividadRepositorio;
 import com.gimnasio.repositorio.SocioActividadRepositorio;
 import java.time.Clock;
@@ -23,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class ActividadServicioTest {
@@ -59,17 +61,15 @@ class ActividadServicioTest {
   void crear_duplicadoInsensibleAMayusculas_bloquea409() {
     when(actividades.existeConNombre("CROSSFIT", null)).thenReturn(true);
 
-    ResponseStatusException e = assertThrows(ResponseStatusException.class,
+    assertThrows(ConflictoException.class,
         () -> servicio.crear(new ActividadRequest("CROSSFIT", "x")));
-    assertEquals(409, e.getStatusCode().value());
     verify(actividades, never()).save(any());
   }
 
   @Test
   void crear_nombreVacio_bloquea400() {
-    ResponseStatusException e = assertThrows(ResponseStatusException.class,
+    assertThrows(SolicitudInvalidaException.class,
         () -> servicio.crear(new ActividadRequest("   ", "x")));
-    assertEquals(400, e.getStatusCode().value());
   }
 
   @Test
@@ -87,9 +87,8 @@ class ActividadServicioTest {
   @Test
   void editar_inexistente_bloquea404() {
     when(actividades.findById(9)).thenReturn(Optional.empty());
-    ResponseStatusException e = assertThrows(ResponseStatusException.class,
+    assertThrows(RecursoNoEncontradoException.class,
         () -> servicio.editar(9, new ActividadRequest("X", "x")));
-    assertEquals(404, e.getStatusCode().value());
   }
 
   @Test
@@ -98,9 +97,8 @@ class ActividadServicioTest {
     when(actividades.findById(1)).thenReturn(Optional.of(a));
     when(actividades.existeConNombre("B", 1)).thenReturn(true);
 
-    ResponseStatusException e = assertThrows(ResponseStatusException.class,
+    assertThrows(ConflictoException.class,
         () -> servicio.editar(1, new ActividadRequest("B", "x")));
-    assertEquals(409, e.getStatusCode().value());
   }
 
   @Test
@@ -120,9 +118,8 @@ class ActividadServicioTest {
     when(actividades.findById(1)).thenReturn(Optional.of(a));
     when(asignaciones.existsByActividadId(1)).thenReturn(true);
 
-    ResponseStatusException e = assertThrows(ResponseStatusException.class,
+    assertThrows(ConflictoException.class,
         () -> servicio.eliminar(1));
-    assertEquals(409, e.getStatusCode().value());
     verify(actividades, never()).delete(any());
   }
 

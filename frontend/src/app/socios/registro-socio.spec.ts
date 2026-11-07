@@ -13,7 +13,9 @@ describe('RegistroSocio', () => {
 
   beforeEach(async () => {
     servicio = {
-      alta: vi.fn().mockReturnValue(of({ id: 1, dni: '34567890', nombre: 'Juan', apellido: 'Pérez' })),
+      alta: vi
+        .fn()
+        .mockReturnValue(of({ id: 1, dni: '34567890', nombre: 'Juan', apellido: 'Pérez' })),
     };
     await TestBed.configureTestingModule({
       imports: [RegistroSocio, ReactiveFormsModule],
@@ -29,7 +31,11 @@ describe('RegistroSocio', () => {
     comp.guardar();
     fixture.detectChanges();
 
-    expect(servicio.alta).toHaveBeenCalledWith({ dni: '34.567.890', nombre: 'Juan', apellido: 'Pérez' });
+    expect(servicio.alta).toHaveBeenCalledWith({
+      dni: '34.567.890',
+      nombre: 'Juan',
+      apellido: 'Pérez',
+    });
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto).toContain('registrado');
     expect(texto).toContain('Ver ficha');
@@ -40,6 +46,37 @@ describe('RegistroSocio', () => {
     comp.guardar();
 
     expect(servicio.alta).not.toHaveBeenCalled();
+  });
+
+  it('indica los campos faltantes', () => {
+    comp.form.setValue({ dni: '', nombre: '', apellido: '' });
+    comp.guardar();
+    fixture.detectChanges();
+
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).toContain('Ingresá el DNI.');
+    expect(texto).toContain('Ingresá el nombre.');
+    expect(texto).toContain('Ingresá el apellido.');
+  });
+
+  it('DNI con formato inválido muestra el formato esperado', () => {
+    comp.form.setValue({ dni: 'abc', nombre: 'Juan', apellido: 'Pérez' });
+    comp.guardar();
+    fixture.detectChanges();
+
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).toContain('Usá solo números, puntos o espacios.');
+    expect(servicio.alta).not.toHaveBeenCalled();
+  });
+
+  it('la credencial refleja los datos ingresados', () => {
+    comp.form.setValue({ dni: '34.567.890', nombre: 'Juan', apellido: 'Pérez' });
+    fixture.detectChanges();
+
+    const tarjeta = (fixture.nativeElement as HTMLElement).querySelector('.credencial-tarjeta');
+    expect(tarjeta?.textContent).toContain('Juan Pérez');
+    expect(tarjeta?.textContent).toContain('34.567.890');
+    expect(tarjeta?.textContent).toContain('JP');
   });
 
   it('DNI duplicado (409) muestra mensaje', () => {

@@ -12,6 +12,7 @@ import com.gimnasio.entidad.Pago;
 import com.gimnasio.entidad.ParametroPrecio;
 import com.gimnasio.entidad.Socio;
 import com.gimnasio.entidad.Usuario;
+import com.gimnasio.excepcion.ConflictoException;
 import com.gimnasio.repositorio.ComprobanteRepositorio;
 import com.gimnasio.repositorio.FeriadoRepositorio;
 import com.gimnasio.repositorio.PagoRepositorio;
@@ -38,7 +39,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class PagoServicioConcurrenciaTest {
@@ -75,9 +75,8 @@ class PagoServicioConcurrenciaTest {
   void duplicadoSecuencial_bloquea409() {
     when(pagos.existsBySocioIdAndPeriodo(1, "2026-10")).thenReturn(true);
 
-    ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicio
+    assertThrows(ConflictoException.class, () -> servicio
         .registrar(new PagoRequest(1, "2026-10", MetodoPago.EFECTIVO, false, null), "recep"));
-    assertEquals(409, e.getStatusCode().value());
   }
 
   @Test
@@ -110,8 +109,8 @@ class PagoServicioConcurrenciaTest {
         try {
           servicio.registrar(new PagoRequest(1, "2026-07", MetodoPago.EFECTIVO, false, null), "recep");
           return 201;
-        } catch (ResponseStatusException e) {
-          return e.getStatusCode().value();
+        } catch (ConflictoException e) {
+          return 409;
         }
       });
     }

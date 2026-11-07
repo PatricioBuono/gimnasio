@@ -1,62 +1,235 @@
+:host {
+  --tablero: #151a14;
+  --tablero-alto: #1c231b;
+  --acero: #303a2e;
+  --acero-claro: #4d5c49;
+  --apagado: #8b9687;
+  --fuente-numeros: 'Cascadia Mono', 'Segoe UI Mono', Consolas, 'Liberation Mono', monospace;
+  display: block;
+}
+
 .pagina {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  max-width: 60rem;
+  gap: 1.25rem;
+  max-width: 68rem;
+  margin: 0 auto;
 }
 
-.pagina h1 {
-  font-size: var(--fs-h1);
-  color: var(--texto);
-  margin: 0;
-}
-
-.fila {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr 1fr auto;
-  gap: 1rem;
-  align-items: center;
-  padding: 1.25rem 0;
-}
-
-.fila + .fila {
-  border-top: 1px solid var(--borde);
-}
-
-.concepto h2 {
-  font-size: var(--fs-h2);
-  margin: 0 0 0.25rem;
-}
-
-.ayuda {
-  margin: 0;
-  font-size: var(--fs-etiqueta);
-  color: var(--texto-secundario);
-}
-
-.valor {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--texto);
-}
-
-form {
+.encabezado {
   display: flex;
-  gap: 0.75rem;
   align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
   flex-wrap: wrap;
+}
+
+.titular {
+  min-width: 0;
+}
+
+.contexto {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  color: var(--texto-secundario);
+  font-size: var(--fs-etiqueta);
+  font-weight: 600;
+}
+
+.pulso {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--verde-neon);
+  box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.12);
+}
+
+.encabezado h1 {
+  margin: 0;
+  color: var(--texto);
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+}
+
+.alerta {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+}
+
+.alerta p {
+  margin: 0.125rem 0 0;
+  color: var(--texto-secundario);
+  font-size: var(--fs-etiqueta);
+}
+
+.alerta-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border: 1px solid var(--alerta);
+  background-color: rgba(255, 82, 82, 0.08);
+}
+
+.alerta-error strong {
+  color: var(--texto);
+}
+
+.alerta-error .btn-secundario {
+  min-height: 2.75rem;
+}
+
+.alerta-exito {
+  border: 1px solid var(--verde-marca);
+  background-color: rgba(76, 175, 80, 0.08);
+  color: var(--exito);
+  font-weight: 600;
+}
+
+.tarifario {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--acero);
+  border-radius: 6px;
+  background-color: var(--tablero);
+  box-shadow: none;
+}
+
+.tarifario-encabezado {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--acero);
+  background-color: var(--tablero-alto);
+}
+
+.rotulo {
+  margin: 0 0 0.1875rem;
+  color: var(--texto-secundario);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tarifario h2 {
+  margin: 0;
+  color: var(--texto);
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+}
+
+.tarifario-nota {
+  margin: 0;
+  color: var(--apagado);
+  font-family: var(--fuente-numeros);
+  font-size: 0.75rem;
+}
+
+.placas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.placa {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.placa + .placa {
+  border-left: 1px solid var(--acero);
+}
+
+.placa::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background-color: var(--verde-marca);
+}
+
+.placa-recargo::before {
+  background-color: #ffd166;
+}
+
+.placa-titulo {
+  margin: 0;
+  color: var(--texto);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.placa-valor {
+  margin: 0.875rem 0 0;
+  color: var(--texto);
+  font-family: var(--fuente-numeros);
+  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.placa-cuota .placa-valor {
+  color: var(--verde-marca);
+}
+
+.placa-recargo .placa-valor {
+  color: #ffd166;
+}
+
+.placa-ayuda {
+  max-width: 32rem;
+  margin: 0.75rem 0 1.25rem;
+  color: var(--texto-secundario);
+  font-size: var(--fs-etiqueta);
+  line-height: 1.55;
+}
+
+.form-actualizacion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem 0.75rem;
+  align-items: end;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--acero-claro);
+}
+
+.campo-actualizacion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.campo-actualizacion label {
+  color: var(--texto-secundario);
+  font-size: var(--fs-etiqueta);
+  font-weight: 600;
 }
 
 .campo-moneda {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  background-color: var(--superficie-elevada);
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 0.5rem 0.625rem;
+  min-height: 2.75rem;
+  padding: 0 0.625rem;
+  border: 1px solid var(--acero-claro);
+  border-radius: 4px;
+  background-color: #0f130f;
 }
 
 .campo-moneda:focus-within {
@@ -64,66 +237,129 @@ form {
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.35);
 }
 
+.campo-moneda .simbolo {
+  color: var(--texto-secundario);
+  font-family: var(--fuente-numeros);
+  font-weight: 700;
+}
+
 .campo-moneda input {
-  border: none;
-  background: transparent;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
   padding: 0;
-  width: 9rem;
+  border: 0;
+  background: transparent;
+  color: var(--texto);
+  font-family: var(--fuente-numeros);
+  font-variant-numeric: tabular-nums;
 }
 
 .campo-moneda input:focus {
-  border: none;
+  border: 0;
   box-shadow: none;
+  outline: none;
 }
 
-.error-campo {
-  color: var(--alerta-suave);
-  font-size: var(--fs-etiqueta);
-  font-weight: 600;
-  margin: 0.25rem 0 0;
-  flex-basis: 100%;
-}
-
-input[aria-invalid='true'] {
+.campo-moneda input[aria-invalid='true'] {
   color: var(--alerta-suave);
 }
 
-form button[type='submit'] {
+.btn-guardar {
+  min-width: 9.5rem;
   min-height: 2.75rem;
-  min-width: 9rem;
+  border: 1px solid var(--verde-marca);
+  border-radius: 4px;
+  background-color: var(--verde-marca);
+  color: #0d0d0d;
+  font-weight: 800;
 }
 
-.skeleton {
-  list-style: none;
-  padding: 0;
+.btn-guardar:hover:not(:disabled) {
+  border-color: #63c667;
+  background-color: #63c667;
+}
+
+.form-actualizacion .error,
+.form-actualizacion .error-campo {
+  grid-column: 1 / -1;
   margin: 0;
 }
 
-.skeleton li {
-  height: 4rem;
-  border-radius: 12px;
-  background-color: var(--superficie);
-  border: 1px solid var(--borde);
-  margin-bottom: 0.5rem;
+.form-actualizacion .error {
+  padding: 0.5rem 0.75rem;
+  font-size: var(--fs-etiqueta);
 }
 
-.alerta-error {
-  background-color: rgba(255, 82, 82, 0.1);
-  border: 1px solid var(--alerta);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
+.form-actualizacion .error-campo {
+  font-size: var(--fs-etiqueta);
 }
 
-@media (max-width: 700px) {
-  .fila {
+.tarifario-cargando {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.cargando-encabezado {
+  width: 12rem;
+  height: 1.25rem;
+  margin-bottom: 1rem;
+  border-radius: 3px;
+  background-color: var(--tablero-alto);
+}
+
+.cargando-placas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.cargando-placas span {
+  height: 16rem;
+  border: 1px solid var(--acero);
+  border-radius: 3px;
+  background-color: var(--tablero-alto);
+}
+
+@media (max-width: 820px) {
+  .placas {
     grid-template-columns: 1fr;
   }
 
-  .campo-moneda input {
-    width: 100%;
+  .placa + .placa {
+    border-top: 1px solid var(--acero);
+    border-left: 0;
   }
 
-  form button[type='submit'] {
+  .cargando-placas {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .encabezado h1 {
+    font-size: 2rem;
+  }
+
+  .tarifario-encabezado {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .placa {
+    padding: 1rem;
+  }
+
+  .placa-valor {
+    font-size: 1.875rem;
+  }
+
+  .form-actualizacion {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-guardar {
     width: 100%;
   }
 }

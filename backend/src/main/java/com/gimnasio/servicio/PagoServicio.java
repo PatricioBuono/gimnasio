@@ -8,6 +8,11 @@ import com.gimnasio.entidad.Feriado;
 import com.gimnasio.entidad.Pago;
 import com.gimnasio.entidad.ParametroPrecio;
 import com.gimnasio.entidad.Usuario;
+import com.gimnasio.excepcion.ConflictoException;
+import com.gimnasio.excepcion.ErrorInternoException;
+import com.gimnasio.excepcion.NoAutorizadoException;
+import com.gimnasio.excepcion.RecursoNoEncontradoException;
+import com.gimnasio.excepcion.SolicitudInvalidaException;
 import com.gimnasio.repositorio.ComprobanteRepositorio;
 import com.gimnasio.repositorio.FeriadoRepositorio;
 import com.gimnasio.repositorio.PagoRepositorio;
@@ -20,17 +25,15 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Set;
-import java.util.stream.Collectors;import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
+import java.util.stream.Collectors;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PagoServicio {
 
   public static final String ETIQUETA_EXONERADO = "Recargo Bonificado";
-  private static final String PREFIJO_SUCURSAL = "0001";
 
   private final PagoRepositorio pagos;
   private final ComprobanteRepositorio comprobantes;
@@ -57,12 +60,12 @@ public class PagoServicio {
   @Transactional
   public ComprobanteResponse registrar(PagoRequest request, String usernameCobrador) {
     if (!socios.existsById(request.socioId())) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Socio no encontrado");
+      throw new RecursoNoEncontradoException("Socio no encontrado");
     }
     Usuario cobrador = usuarios.findByUsername(usernameCobrador)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no válido"));
+        .orElseThrow(() -> new NoAutorizadoException("Usuario no válido"));
     if (pagos.existsBySocioIdAndPeriodo(request.socioId(), request.periodo())) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "El período ya fue cobrado");
+      throw new ConflictoException("El período ya fue cobrado");
     }
     Calculo calculo = calcular(request.socioId(), request.periodo());
 
@@ -73,7 +76,7 @@ public class PagoServicio {
     String motivo = null;
     if (request.exonerado()) {
       if (request.motivo() == null || request.motivo().trim().isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La exoneración requiere un motivo");
+        throw new SolicitudInvalidaException("La exoneración requiere un motivo");
       }
       recargo = BigDecimal.ZERO;
       etiqueta = ETIQUETA_EXONERADO;
@@ -105,21 +108,21 @@ public class PagoServicio {
       comprobante.setCreadoEn(OffsetDateTime.now(reloj));
       Comprobante guardadoComp = comprobantes.save(comprobante);
 
-      return new ComprobanteResponse(formatearNumero(guardadoComp.getNro()), guardado.getSocioId(),
-          guardado.getPeriodo(), guardado.getCuota(), calculo.semanas(), guardado.getRecargo(),
-          guardado.getTotal(), guardado.getMetodo().name(), guardadoComp.getEtiqueta(), calculo.fechaLimite());
+      return ComprobanteResponse.de(guardadoComp.getNro(), guardado.getSocioId(), guardado.getPeriodo(),
+          guardado.getCuota(), calculo.semanas(), guardado.getRecargo(), guardado.getTotal(),
+          guardado.getMetodo().name(), guardadoComp.getEtiqueta(), calculo.fechaLimite());
     } catch (DataIntegrityViolationException e) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "El período ya fue cobrado");
+      throw new ConflictoException("El período ya fue cobrado");
     }
   }
 
   @Transactional(readOnly = true)
   public VistaPreviaResponse vistaPrevia(Integer socioId, String periodo) {
     if (!socios.existsById(socioId)) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Socio no encontrado");
+      throw new RecursoNoEncontradoException("Socio no encontrado");
     }
     if (pagos.existsBySocioIdAndPeriodo(socioId, periodo)) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "El período ya fue cobrado");
+      throw new ConflictoException("El período ya fue cobrado");
     }
     Calculo calculo = calcular(socioId, periodo);
     return new VistaPreviaResponse(calculo.cuota(), calculo.fechaLimite(), calculo.dias(), calculo.semanas(),
@@ -142,12 +145,7 @@ public class PagoServicio {
   private BigDecimal parametro(String clave) {
     return parametros.findById(clave)
         .map(ParametroPrecio::getValor)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-            "Parámetro no configurado: " + clave));
-  }
-
-  private String formatearNumero(Long nro) {
-    return PREFIJO_SUCURSAL + "-" + String.format("%08d", nro);
+        .orElseThrow(() -> new ErrorInternoException("Parámetro no configurado: " + clave));
   }
 
   private record Calculo(BigDecimal cuota, LocalDate fechaLimite, long dias, long semanas, BigDecimal recargo) {

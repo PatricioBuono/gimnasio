@@ -1,4 +1,14 @@
-import { Component, DestroyRef, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  Injector,
+  ViewChild,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -35,9 +45,18 @@ export class DashboardComponent {
   conDeuda = computed(() => this.aplicarFiltros(this.dashboard()?.conDeuda ?? []));
   busquedaFiltrada = computed(() => this.aplicarFiltros(this.resultados() ?? []));
   enBusqueda = computed(() => this.resultados() !== null);
-  porVencer = computed(() =>
-    this.aplicarFiltros((this.dashboard()?.alDia ?? []).filter((s) => this.esPorVencer(s))),
+  conDeudaTotal = computed(() => this.filtrarActividad(this.dashboard()?.conDeuda ?? []).length);
+  porVencerTotal = computed(
+    () =>
+      this.filtrarActividad(
+        (this.dashboard()?.alDia ?? []).filter((s) => this.esPorVencer(s)),
+      ).length,
   );
+  alDiaTotal = computed(() => this.filtrarActividad(this.dashboard()?.alDia ?? []).length);
+  mostrarConDeuda = computed(
+    () => this.filtroEstado() === 'TODOS' || this.filtroEstado() === 'CON_DEUDA',
+  );
+  mostrarAlDia = computed(() => this.filtroEstado() !== 'CON_DEUDA');
   actividadesDisponibles = computed(() => {
     const todas = [
       ...(this.dashboard()?.alDia ?? []),
@@ -54,6 +73,7 @@ export class DashboardComponent {
   });
 
   private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
 
   constructor(
     private servicio: DashboardService,
@@ -129,11 +149,16 @@ export class DashboardComponent {
   abrirConfirmacion(s: SocioEstado, disparador: HTMLElement): void {
     this.socioDialogo.set(s);
     this.disparadorDialogo = disparador;
-    const dlg = this.dialogo?.nativeElement;
-    if (dlg && typeof dlg.showModal === 'function' && !dlg.open) {
-      dlg.showModal();
-      dlg.querySelector('button')?.focus();
-    }
+    afterNextRender(
+      () => {
+        const dlg = this.dialogo?.nativeElement;
+        if (dlg && typeof dlg.showModal === 'function' && !dlg.open) {
+          dlg.showModal();
+          dlg.querySelector<HTMLButtonElement>('.acciones-dialogo button')?.focus();
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   cerrarConfirmacion(): void {
