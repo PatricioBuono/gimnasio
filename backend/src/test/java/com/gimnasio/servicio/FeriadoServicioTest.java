@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import com.gimnasio.dto.FeriadoRequest;
 import com.gimnasio.dto.FeriadoResponse;
 import com.gimnasio.entidad.Feriado;
+import com.gimnasio.excepcion.ConflictoException;
+import com.gimnasio.excepcion.RecursoNoEncontradoException;
 import com.gimnasio.repositorio.FeriadoRepositorio;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -18,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class FeriadoServicioTest {
@@ -46,9 +47,8 @@ class FeriadoServicioTest {
   void crear_duplicado_bloquea409() {
     when(feriados.existsById(fecha)).thenReturn(true);
 
-    ResponseStatusException e = assertThrows(ResponseStatusException.class,
+    assertThrows(ConflictoException.class,
         () -> servicio.crear(new FeriadoRequest(fecha, "x")));
-    assertEquals(409, e.getStatusCode().value());
     verify(feriados, never()).save(any());
   }
 
@@ -65,15 +65,15 @@ class FeriadoServicioTest {
   @Test
   void editar_inexistente_bloquea404() {
     when(feriados.findById(fecha)).thenReturn(Optional.empty());
-    assertEquals(404, assertThrows(ResponseStatusException.class,
-        () -> servicio.editar(new FeriadoRequest(fecha, "x"))).getStatusCode().value());
+    assertThrows(RecursoNoEncontradoException.class,
+        () -> servicio.editar(new FeriadoRequest(fecha, "x")));
   }
 
   @Test
   void eliminar_inexistente_bloquea404() {
     when(feriados.existsById(fecha)).thenReturn(false);
-    assertEquals(404, assertThrows(ResponseStatusException.class,
-        () -> servicio.eliminar(fecha)).getStatusCode().value());
+    assertThrows(RecursoNoEncontradoException.class,
+        () -> servicio.eliminar(fecha));
     verify(feriados, never()).deleteById(any());
   }
 }

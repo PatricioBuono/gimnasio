@@ -1,7 +1,7 @@
 import { Component, ViewChild, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { formatearMoneda } from '../core/formato';
+import { formatearPrecio } from '../core/formato';
 import { PrecioService } from '../core/precio.service';
 import { ConfirmarDialogo } from '../shared/confirmar-dialogo';
 
@@ -48,7 +48,7 @@ export class Precios {
   }
 
   formatear(v: number | null): string {
-    return formatearMoneda(v);
+    return formatearPrecio(v);
   }
 
   cargar(): void {

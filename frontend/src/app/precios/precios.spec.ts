@@ -31,11 +31,32 @@ describe('Precios', () => {
     fixture.detectChanges();
   });
 
-  it('muestra valores formateados como moneda y ayudas', () => {
+  it('muestra valores formateados como moneda sin decimales y ayudas', () => {
     expect(texto()).toContain('15.000');
     expect(texto()).toContain('500');
+    expect(texto()).not.toContain(',00');
     expect(texto()).toContain('Debe ser mayor a 0');
     expect(texto()).toContain('mayor o igual a 0');
+  });
+
+  it('no muestra el pie con la regla de recálculo', () => {
+    const nativo = fixture.nativeElement as HTMLElement;
+
+    expect(nativo.querySelector('.tarifario-pie')).toBeNull();
+    expect(texto()).not.toContain('no recalculan deudas consolidadas');
+  });
+
+  it('expone cada tarifa con su valor actual y un campo etiquetado', () => {
+    const nativo = fixture.nativeElement as HTMLElement;
+    const cuota = nativo.querySelector('#nueva-cuota');
+    const recargo = nativo.querySelector('#nuevo-recargo');
+
+    expect(texto()).toContain('Cuota actual');
+    expect(texto()).toContain('Recargo actual');
+    expect(nativo.querySelector('label[for="nueva-cuota"]')?.textContent).toContain('Nuevo valor');
+    expect(nativo.querySelector('label[for="nuevo-recargo"]')?.textContent).toContain('Nuevo valor');
+    expect(cuota?.getAttribute('aria-describedby')).toBe('ayuda-cuota');
+    expect(recargo?.getAttribute('aria-describedby')).toBe('ayuda-recargo');
   });
 
   it('botón deshabilitado si el valor es igual al actual', () => {

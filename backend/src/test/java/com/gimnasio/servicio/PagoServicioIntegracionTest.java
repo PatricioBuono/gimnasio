@@ -10,6 +10,8 @@ import com.gimnasio.dto.PagoRequest;
 import com.gimnasio.entidad.MetodoPago;
 import com.gimnasio.entidad.ParametroPrecio;
 import com.gimnasio.entidad.Socio;
+import com.gimnasio.excepcion.ConflictoException;
+import com.gimnasio.excepcion.SolicitudInvalidaException;
 import com.gimnasio.repositorio.ComprobanteRepositorio;
 import com.gimnasio.repositorio.PagoRepositorio;
 import com.gimnasio.repositorio.ParametroPrecioRepositorio;
@@ -36,7 +38,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -129,9 +130,8 @@ class PagoServicioIntegracionTest {
   void pagoDuplicado_bloquea409() {
     servicio.registrar(new PagoRequest(socioId, "2026-10", MetodoPago.EFECTIVO, false, null), "admin");
 
-    ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicio
+    assertThrows(ConflictoException.class, () -> servicio
         .registrar(new PagoRequest(socioId, "2026-10", MetodoPago.EFECTIVO, false, null), "admin"));
-    assertEquals(409, e.getStatusCode().value());
   }
 
   @Test
@@ -144,8 +144,8 @@ class PagoServicioIntegracionTest {
         try {
           servicio.registrar(new PagoRequest(socioId, "2026-07", MetodoPago.EFECTIVO, false, null), "admin");
           return 201;
-        } catch (ResponseStatusException e) {
-          return e.getStatusCode().value();
+        } catch (ConflictoException e) {
+          return 409;
         }
       });
     }
@@ -188,9 +188,8 @@ class PagoServicioIntegracionTest {
 
   @Test
   void exoneracion_sinMotivo_bloquea400() {
-    ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicio
+    assertThrows(SolicitudInvalidaException.class, () -> servicio
         .registrar(new PagoRequest(socioId, "2026-08", MetodoPago.EFECTIVO, true, "   "), "admin"));
-    assertEquals(400, e.getStatusCode().value());
   }
 
   private void guardarParametro(String clave, BigDecimal valor) {

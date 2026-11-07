@@ -37,6 +37,14 @@ Reglas clave:
 * `MR-US4`: `FechaService` centraliza: `fecha_limite`, `dias_atraso`, `semanas=ceil(dias/7)`, `total_recargo`. Inyectar `Clock` para testear sin flakiness.
 * `MR-US5`: exoneración exige motivo no vacío, registra `motivo + usuario + fecha/hora`, etiqueta `Recargo Bonificado`. Reversión solo antes de confirmar.
 
+### 3.1 Decisión de estilo: Clean-lite pragmático
+
+Se mantiene el monolito por capas de §3 y se adopta una **Clean Architecture pragmática**:
+
+* Regla aplicada: las dependencias apuntan hacia adentro (`controller → service → repository`). Los servicios no conocen HTTP: las excepciones de negocio viven en `com.gimnasio.excepcion` y un `@RestControllerAdvice` las traduce a códigos.
+* Regla **no** aplicada en MVP: separar entidades JPA del modelo de dominio, introducir puertos/adapters o microservicios. `entity` sigue siendo la capa de persistencia.
+* Fundamento: el dominio es CRUD-heavy y el equipo es reducido; aislar el ORM agrega costo sin beneficio medible. Se revisará si aparece una segunda vía de escritura o el dominio se vuelve más rico.
+
 ## 4. Base de datos (PostgreSQL 16)
 
 Entidades mínimas: `usuario, socio, actividad, socio_actividad, parametro_precio, feriado, periodo_pago / pago, comprobante`.
@@ -87,7 +95,8 @@ Admin maestro: insertado solo por migración (`V1__init.sql`) con password hashe
 
 * Vitest: unit FE (cálculo desglose, filtro MR-US8, validaciones form, búsqueda con debounce mockeado).
 * Cypress E2E (solo críticos): 1) buscar moroso por DNI, 2) registrar pago con recargo y verificar desglose, 3) exonerar con motivo y verificar etiqueta, 4) verificar comprobante `0001-...`.
-* Backend (cuando se implemente): JUnit + `Clock` fijo para `MR-US4`, Testcontainers PG para constraints/transacciones, tests Security por rol.
+* Backend: JUnit + `Clock` fijo para `MR-US4`, Testcontainers PG para constraints/transacciones, tests Security por rol.
+* Implementación (2026-11-06): Testcontainers corre PostgreSQL 16 real; `docker-java.properties` fija `api.version=1.40` por compatibilidad con Docker 29. Cypress usa el stack completo (SPA + backend E2E + PostgreSQL aislado), sin mocks de API, y `pg` tasks para sembrar fechas relativas y verificar la auditoría. El SPA acepta `window.__GIMNASIO_API_URL__` solo como costura de test.
 
 ## 11. Alcance MVP
 

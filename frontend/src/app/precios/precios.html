@@ -1,103 +1,150 @@
 <div class="pagina">
-  <h1>Configuración de precios</h1>
+  <header class="encabezado">
+    <div class="titular">
+      <p class="contexto"><span class="pulso" aria-hidden="true"></span> Administración Hulk</p>
+      <h1>Precios</h1>
+    </div>
+  </header>
 
   @if (cargando()) {
-    <div role="status" aria-label="Cargando precios">
+    <div class="tarifario tarifario-cargando" role="status" aria-label="Cargando precios">
       <span class="sr-only">Cargando precios…</span>
-      <ul class="skeleton" aria-hidden="true">
-        <li></li>
-        <li></li>
-      </ul>
+      <div class="cargando-encabezado" aria-hidden="true"></div>
+      <div class="cargando-placas" aria-hidden="true">
+        <span></span>
+        <span></span>
+      </div>
     </div>
   } @else if (errorCarga()) {
-    <div role="alert" class="alerta-error">
-      <p>No se pudieron cargar los precios.</p>
-      <button type="button" (click)="cargar()">Reintentar</button>
+    <div class="alerta alerta-error" role="alert">
+      <div>
+        <strong>No se pudieron cargar los precios.</strong>
+        <p>Revisá la conexión e intentá de nuevo.</p>
+      </div>
+      <button type="button" class="btn-secundario" (click)="cargar()">Reintentar</button>
     </div>
   } @else {
     @if (exito()) {
-      <p class="exito" role="status">{{ exito() }}</p>
+      <p class="alerta alerta-exito" role="status">{{ exito() }}</p>
     }
 
-    <section aria-label="Valores de cuota y recargo">
-      <div class="fila">
-        <div class="concepto">
-          <h2>Cuota</h2>
-          <p class="ayuda" id="ayuda-cuota">
-            Monto base de cada cuota mensual. Debe ser mayor a 0. Rige para los cobros que se
-            registren desde ahora; no modifica comprobantes ya emitidos.
-          </p>
+    <section class="tarifario" aria-labelledby="titulo-tarifario" [attr.aria-busy]="guardando() !== null">
+      <header class="tarifario-encabezado">
+        <div>
+          <p class="rotulo">Valores de caja</p>
+          <h2 id="titulo-tarifario">Tarifario vigente</h2>
         </div>
-        <p class="valor" aria-label="Cuota actual">{{ formatear(cuotaActual()) }}</p>
-        <form [formGroup]="formCuota" (ngSubmit)="pedirConfirmarCuota(btnCuota)">
-          @if (errorCuota()) {
-            <p class="error" role="alert">{{ errorCuota() }}</p>
-          }
-          <label>
-            Nuevo valor
-            <span class="campo-moneda">
-              <span aria-hidden="true">$</span>
-              <input
-                type="number"
-                step="0.01"
-                min="0.01"
-                inputmode="decimal"
-                formControlName="valor"
-                aria-describedby="ayuda-cuota error-cuota"
-                [attr.aria-invalid]="cuotaInvalida" />
-            </span>
-          </label>
-          @if (cuotaInvalida) {
-            <p class="error-campo" id="error-cuota" role="alert">Debe ser mayor a 0</p>
-          }
-          <button
-            #btnCuota
-            type="submit"
-            [disabled]="!puedeGuardarCuota()"
-            [attr.aria-label]="'Guardar cuota'">
-            {{ guardando() === 'cuota' ? 'Guardando…' : 'Guardar cuota' }}
-          </button>
-        </form>
-      </div>
+        <p class="tarifario-nota">Aplica a los cobros nuevos</p>
+      </header>
 
-      <div class="fila">
-        <div class="concepto">
-          <h2>Recargo semanal</h2>
-          <p class="ayuda" id="ayuda-recargo">
-            Monto fijo que se suma por cada semana de atraso cuando se cobra fuera de término.
-            Debe ser mayor o igual a 0. Rige para los cobros que se registren desde ahora.
+      <div class="placas">
+        <article class="placa placa-cuota" aria-labelledby="titulo-cuota">
+          <h3 id="titulo-cuota" class="placa-titulo">Cuota mensual</h3>
+
+          <p class="placa-valor">
+            <span class="sr-only">Cuota actual:</span>{{ formatear(cuotaActual()) }}
           </p>
-        </div>
-        <p class="valor" aria-label="Recargo actual">{{ formatear(recargoActual()) }}</p>
-        <form [formGroup]="formRecargo" (ngSubmit)="pedirConfirmarRecargo(btnRecargo)">
-          @if (errorRecargo()) {
-            <p class="error" role="alert">{{ errorRecargo() }}</p>
-          }
-          <label>
-            Nuevo valor
-            <span class="campo-moneda">
-              <span aria-hidden="true">$</span>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                inputmode="decimal"
-                formControlName="valor"
-                aria-describedby="ayuda-recargo error-recargo"
-                [attr.aria-invalid]="recargoInvalido" />
-            </span>
-          </label>
-          @if (recargoInvalido) {
-            <p class="error-campo" id="error-recargo" role="alert">Debe ser mayor o igual a 0</p>
-          }
-          <button
-            #btnRecargo
-            type="submit"
-            [disabled]="!puedeGuardarRecargo()"
-            [attr.aria-label]="'Guardar recargo'">
-            {{ guardando() === 'recargo' ? 'Guardando…' : 'Guardar recargo' }}
-          </button>
-        </form>
+
+          <p class="placa-ayuda" id="ayuda-cuota">
+            Monto base de cada cuota. Debe ser mayor a 0. Rige para los cobros que se registren desde
+            ahora; no modifica comprobantes ya emitidos.
+          </p>
+
+          <form
+            class="form-actualizacion"
+            [formGroup]="formCuota"
+            (ngSubmit)="pedirConfirmarCuota(btnCuota)"
+            novalidate>
+            <div class="campo-actualizacion">
+              <label for="nueva-cuota">Nuevo valor de cuota</label>
+              <div class="campo-moneda">
+                <span class="simbolo" aria-hidden="true">$</span>
+                <input
+                  id="nueva-cuota"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  inputmode="decimal"
+                  formControlName="valor"
+                  [attr.aria-invalid]="cuotaInvalida"
+                  [attr.aria-describedby]="
+                    cuotaInvalida ? 'ayuda-cuota error-cuota' : 'ayuda-cuota'
+                  " />
+              </div>
+            </div>
+
+            <button
+              #btnCuota
+              type="submit"
+              class="btn-guardar"
+              [disabled]="!puedeGuardarCuota()"
+              [attr.aria-label]="'Guardar cuota'">
+              {{ guardando() === 'cuota' ? 'Guardando…' : 'Guardar cuota' }}
+            </button>
+
+            @if (errorCuota()) {
+              <p class="error" role="alert">{{ errorCuota() }}</p>
+            }
+            @if (cuotaInvalida) {
+              <p class="error-campo" id="error-cuota" role="alert">Debe ser mayor a 0</p>
+            }
+          </form>
+        </article>
+
+        <article class="placa placa-recargo" aria-labelledby="titulo-recargo">
+          <h3 id="titulo-recargo" class="placa-titulo">Recargo semanal</h3>
+
+          <p class="placa-valor">
+            <span class="sr-only">Recargo actual:</span>{{ formatear(recargoActual()) }}
+          </p>
+
+          <p class="placa-ayuda" id="ayuda-recargo">
+            Monto fijo que se suma por cada semana de atraso. Debe ser mayor o igual a 0. Rige para
+            los cobros que se registren desde ahora.
+          </p>
+
+          <form
+            class="form-actualizacion"
+            [formGroup]="formRecargo"
+            (ngSubmit)="pedirConfirmarRecargo(btnRecargo)"
+            novalidate>
+            <div class="campo-actualizacion">
+              <label for="nuevo-recargo">Nuevo valor de recargo</label>
+              <div class="campo-moneda">
+                <span class="simbolo" aria-hidden="true">$</span>
+                <input
+                  id="nuevo-recargo"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputmode="decimal"
+                  formControlName="valor"
+                  [attr.aria-invalid]="recargoInvalido"
+                  [attr.aria-describedby]="
+                    recargoInvalido ? 'ayuda-recargo error-recargo' : 'ayuda-recargo'
+                  " />
+              </div>
+            </div>
+
+            <button
+              #btnRecargo
+              type="submit"
+              class="btn-guardar"
+              [disabled]="!puedeGuardarRecargo()"
+              [attr.aria-label]="'Guardar recargo'">
+              {{ guardando() === 'recargo' ? 'Guardando…' : 'Guardar recargo' }}
+            </button>
+
+            @if (errorRecargo()) {
+              <p class="error" role="alert">{{ errorRecargo() }}</p>
+            }
+            @if (recargoInvalido) {
+              <p class="error-campo" id="error-recargo" role="alert">
+                Debe ser mayor o igual a 0
+              </p>
+            }
+          </form>
+        </article>
       </div>
     </section>
   }

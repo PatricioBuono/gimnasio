@@ -1,8 +1,20 @@
-<nav>
-  <span class="marca" aria-label="Hulk Gimnasio">HULK</span>
-  <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-  <a routerLink="/actividades" routerLinkActive="active">Actividades</a>
-  <a routerLink="/precios" routerLinkActive="active">Precios</a>
+<nav aria-label="Navegación principal">
+  <a
+    class="marca"
+    routerLink="/dashboard"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    ariaCurrentWhenActive="page"
+    aria-label="Hulk Gimnasio, ir al inicio">
+    <img class="marca-imagen" src="marca-hulk.jpg" alt="" width="44" height="44" />
+    <span class="marca-texto">Hulk<span class="marca-sub">Gimnasio</span></span>
+  </a>
+  <a class="enlace" routerLink="/actividades" routerLinkActive="active" ariaCurrentWhenActive="page">
+    Actividades
+  </a>
+  <a class="enlace" routerLink="/precios" routerLinkActive="active" ariaCurrentWhenActive="page">
+    Precios
+  </a>
 </nav>
 <main>
   <router-outlet />

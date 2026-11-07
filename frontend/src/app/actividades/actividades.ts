@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActividadService } from '../core/actividad.service';
@@ -13,6 +13,10 @@ import { ConfirmarDialogo } from '../shared/confirmar-dialogo';
 })
 export class Actividades {
   actividades = signal<Actividad[]>([]);
+  activasTotal = computed(() => this.actividades().filter((a) => a.estado === 'ACTIVA').length);
+  inactivasTotal = computed(
+    () => this.actividades().filter((a) => a.estado !== 'ACTIVA').length,
+  );
   cargando = signal(true);
   error = signal<string | null>(null);
   exito = signal<string | null>(null);
@@ -77,6 +81,7 @@ export class Actividades {
   }
 
   editar(a: Actividad): void {
+    this.error.set(null);
     this.exito.set(null);
     this.editandoId.set(a.id);
     this.form.setValue({ nombre: a.nombre, descripcion: a.descripcion ?? '' });
@@ -111,6 +116,8 @@ export class Actividades {
   }
 
   inhabilitar(a: Actividad): void {
+    this.error.set(null);
+    this.exito.set(null);
     this.servicio.inhabilitar(a.id).subscribe({
       next: () => {
         this.exito.set(`Actividad "${a.nombre}" inhabilitada`);
@@ -121,6 +128,8 @@ export class Actividades {
   }
 
   habilitar(a: Actividad): void {
+    this.error.set(null);
+    this.exito.set(null);
     this.servicio.habilitar(a.id).subscribe({
       next: () => {
         this.exito.set(`Actividad "${a.nombre}" habilitada`);

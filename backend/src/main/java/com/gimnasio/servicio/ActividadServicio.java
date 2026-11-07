@@ -4,15 +4,16 @@ import com.gimnasio.dto.ActividadRequest;
 import com.gimnasio.dto.ActividadResponse;
 import com.gimnasio.entidad.Actividad;
 import com.gimnasio.entidad.EstadoActividad;
+import com.gimnasio.excepcion.ConflictoException;
+import com.gimnasio.excepcion.RecursoNoEncontradoException;
+import com.gimnasio.excepcion.SolicitudInvalidaException;
 import com.gimnasio.repositorio.ActividadRepositorio;
 import com.gimnasio.repositorio.SocioActividadRepositorio;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ActividadServicio {
@@ -31,7 +32,7 @@ public class ActividadServicio {
   public ActividadResponse crear(ActividadRequest request) {
     String nombre = normalizar(request.nombre());
     if (actividades.existeConNombre(nombre, null)) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una actividad con ese nombre");
+      throw new ConflictoException("Ya existe una actividad con ese nombre");
     }
     Actividad guardada = actividades.save(new Actividad(nombre, request.descripcion(), OffsetDateTime.now(reloj)));
     return aResponse(guardada);
@@ -42,7 +43,7 @@ public class ActividadServicio {
     Actividad actividad = buscar(id);
     String nombre = normalizar(request.nombre());
     if (actividades.existeConNombre(nombre, id)) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una actividad con ese nombre");
+      throw new ConflictoException("Ya existe una actividad con ese nombre");
     }
     actividad.setNombre(nombre);
     actividad.setDescripcion(request.descripcion());
@@ -53,7 +54,7 @@ public class ActividadServicio {
   public void eliminar(Integer id) {
     Actividad actividad = buscar(id);
     if (asignaciones.existsByActividadId(id)) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
+      throw new ConflictoException(
           "La actividad tiene socios asignados: inhabilítela en lugar de eliminarla");
     }
     actividades.delete(actividad);
@@ -80,12 +81,12 @@ public class ActividadServicio {
 
   private Actividad buscar(Integer id) {
     return actividades.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Actividad no encontrada"));
+        .orElseThrow(() -> new RecursoNoEncontradoException("Actividad no encontrada"));
   }
 
   private String normalizar(String nombre) {
     if (nombre == null || nombre.trim().isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre es obligatorio");
+      throw new SolicitudInvalidaException("El nombre es obligatorio");
     }
     return nombre.trim();
   }

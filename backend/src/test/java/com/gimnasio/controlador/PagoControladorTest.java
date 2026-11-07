@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.gimnasio.config.ZonaHorariaConfig;
 import com.gimnasio.dto.ComprobanteResponse;
 import com.gimnasio.dto.VistaPreviaResponse;
+import com.gimnasio.excepcion.ConflictoException;
 import com.gimnasio.seguridad.JwtFilter;
 import com.gimnasio.seguridad.JwtUtil;
 import com.gimnasio.seguridad.SecurityConfig;
@@ -24,11 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 @WebMvcTest(PagoControlador.class)
 @Import({SecurityConfig.class, JwtFilter.class, JwtUtil.class, ZonaHorariaConfig.class})
@@ -62,7 +61,7 @@ class PagoControladorTest {
   @WithMockUser(username = "recep", roles = "RECEPCIONISTA")
   void registrar_duplicado_devuelve409() throws Exception {
     when(servicio.registrar(any(), anyString()))
-        .thenThrow(new ResponseStatusException(HttpStatus.CONFLICT, "El período ya fue cobrado"));
+        .thenThrow(new ConflictoException("El período ya fue cobrado"));
 
     mvc.perform(post("/api/pagos")
             .contentType(MediaType.APPLICATION_JSON)

@@ -34,10 +34,16 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable())
         .cors(Customizer.withDefaults())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(e -> e.authenticationEntryPoint(
-            (request, response, ex) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
+        .exceptionHandling(e -> e
+            .authenticationEntryPoint(
+                (request, response, ex) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+            .accessDeniedHandler(
+                (request, response, ex) -> response.sendError(HttpServletResponse.SC_FORBIDDEN)))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/**").permitAll()
+            // El error dispatch interno es anónimo: si se protege, un 400/403 del
+            // controlador termina devolviendo 401. El body sigue siendo el genérico.
+            .requestMatchers("/error").permitAll()
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
             .requestMatchers("/api/socios/**").hasAnyRole("ADMIN", "RECEPCIONISTA")
             .requestMatchers("/api/pagos/**").hasAnyRole("ADMIN", "RECEPCIONISTA")

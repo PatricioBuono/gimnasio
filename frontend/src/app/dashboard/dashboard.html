@@ -1,46 +1,71 @@
 <div class="pagina">
   <header class="encabezado">
-    <div>
+    <div class="titular">
+      <p class="contexto"><span class="pulso" aria-hidden="true"></span> Recepción Hulk</p>
       <h1>Socios</h1>
-      <p class="subtitulo">Control de accesos y cobros del gimnasio</p>
     </div>
-    <a class="boton-primario" routerLink="/socios/nuevo">+ Nuevo socio</a>
+    <a class="boton-primario" routerLink="/socios/nuevo">
+      <span class="signo" aria-hidden="true">+</span>
+      Nuevo socio
+    </a>
   </header>
 
-  @if (dashboard(); as d) {
-    <div class="resumen" role="group" aria-label="Resumen por estado">
+  @if (cargando()) {
+    <div class="marcador marcador-cargando" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  } @else if (dashboard()) {
+    <div class="marcador" role="group" aria-label="Resumen por estado">
       <button
         type="button"
-        class="contador"
+        class="marcador-celda"
         [attr.aria-pressed]="filtroEstado() === 'CON_DEUDA'"
         (click)="cambiarFiltroEstado('CON_DEUDA')">
-        <strong>{{ conDeuda().length }}</strong> Con deuda
+        <span class="marcador-numero">{{ conDeudaTotal() }}</span>
+        <span class="marcador-copy">
+          <span class="marcador-texto">Con deuda</span>
+          <span class="marcador-pista">Cobrar primero</span>
+        </span>
       </button>
       <button
         type="button"
-        class="contador"
+        class="marcador-celda"
         [attr.aria-pressed]="filtroEstado() === 'POR_VENCER'"
         (click)="cambiarFiltroEstado('POR_VENCER')">
-        <strong>{{ porVencer().length }}</strong> Por vencer
+        <span class="marcador-numero">{{ porVencerTotal() }}</span>
+        <span class="marcador-copy">
+          <span class="marcador-texto">Por vencer</span>
+          <span class="marcador-pista">Próximos 5 días</span>
+        </span>
       </button>
       <button
         type="button"
-        class="contador"
+        class="marcador-celda"
         [attr.aria-pressed]="filtroEstado() === 'AL_DIA'"
         (click)="cambiarFiltroEstado('AL_DIA')">
-        <strong>{{ alDia().length }}</strong> Al día
+        <span class="marcador-numero">{{ alDiaTotal() }}</span>
+        <span class="marcador-copy">
+          <span class="marcador-texto">Al día</span>
+          <span class="marcador-pista">Incluye por vencer</span>
+        </span>
       </button>
     </div>
   }
 
-  <div class="barra">
-    <label class="buscador">
-      <span class="sr-only">Buscar por DNI o nombre</span>
+  <div class="comandos">
+    <div class="buscador">
+      <label class="sr-only" for="busqueda-socios">Buscar por DNI o nombre</label>
       <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
         <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" />
         <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" />
       </svg>
-      <input type="search" [formControl]="busqueda" placeholder="Buscar por DNI o nombre" aria-label="Buscar por DNI o nombre" />
+      <input
+        id="busqueda-socios"
+        type="search"
+        [formControl]="busqueda"
+        placeholder="Buscar por DNI o nombre" />
       @if (busqueda.value) {
         <button type="button" class="limpiar" (click)="limpiarBusqueda()" aria-label="Limpiar búsqueda">
           <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
@@ -49,154 +74,261 @@
           </svg>
         </button>
       }
-    </label>
-    <label class="filtro">
-      <span class="sr-only">Filtrar por actividad</span>
-      <select (change)="cambiarFiltro($any($event.target).value)" aria-label="Filtrar por actividad">
+    </div>
+    <div class="filtro">
+      <label class="sr-only" for="filtro-actividad">Filtrar por actividad</label>
+      <select id="filtro-actividad" (change)="cambiarFiltro($any($event.target).value)">
         <option value="">Todas las actividades</option>
         @for (a of actividadesDisponibles(); track a.id) {
           <option [value]="a.id">{{ a.nombre }}</option>
         }
       </select>
-    </label>
+    </div>
   </div>
 
   @if (cargando()) {
-    <div role="status" aria-label="Cargando socios">
+    <div class="tablero-cargando" role="status" aria-label="Cargando socios">
       <span class="sr-only">Cargando socios…</span>
-      <ul class="skeleton" aria-hidden="true">
-        <li></li>
-        <li></li>
-        <li></li>
-      </ul>
+      <div class="skeleton" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   } @else if (error()) {
     <div role="alert" class="alerta-error">
-      <p>No se pudo cargar el listado de socios.</p>
-      <button type="button" (click)="cargar()">Reintentar</button>
+      <div>
+        <strong>No se pudo cargar el tablero.</strong>
+        <p>Revisá la conexión e intentá de nuevo.</p>
+      </div>
+      <button type="button" class="btn-secundario" (click)="cargar()">Reintentar</button>
     </div>
   } @else if (enBusqueda()) {
-    <section aria-label="Resultados de búsqueda">
-      <h2>Resultados</h2>
+    <section class="bloque bloque-busqueda" aria-label="Resultados de búsqueda">
+      <header class="bloque-encabezado">
+        <div>
+          <p class="bloque-contexto">Búsqueda</p>
+          <h2 aria-live="polite">Resultados <span class="cuenta">· {{ busquedaFiltrada().length }}</span></h2>
+        </div>
+        <button type="button" class="btn-texto" (click)="limpiarBusqueda()">Volver al tablero</button>
+      </header>
+
       @if (busquedaFiltrada().length === 0) {
-        <p class="vacio">Sin resultados para esta búsqueda.</p>
-        <p>
-          <button type="button" (click)="limpiarBusqueda()">Limpiar búsqueda</button>
-          <a routerLink="/socios/nuevo">Nuevo Socio</a>
-        </p>
+        <div class="vacio-bloque">
+          <p class="vacio-titulo">Sin resultados</p>
+          <p>No encontramos socios con ese DNI o nombre.</p>
+          <div class="acciones-vacio">
+            <button type="button" class="btn-secundario" (click)="limpiarBusqueda()">
+              Limpiar búsqueda
+            </button>
+            <a class="boton-primario" routerLink="/socios/nuevo">Nuevo socio</a>
+          </div>
+        </div>
       } @else {
-        <ng-container *ngTemplateOutlet="tabla; context: { $implicit: busquedaFiltrada(), etiqueta: 'resultados' }" />
+        <ng-container
+          *ngTemplateOutlet="
+            tabla;
+            context: { $implicit: busquedaFiltrada(), etiqueta: 'en los resultados' }
+          " />
       }
     </section>
   } @else {
-    <section aria-label="Socios con deuda">
-      <h2>Con deuda · {{ conDeuda().length }}</h2>
-      @if (conDeuda().length === 0) {
-        <p class="vacio">No hay socios con deuda</p>
-      } @else {
-        <ng-container *ngTemplateOutlet="tabla; context: { $implicit: conDeuda(), etiqueta: 'con deuda' }" />
-      }
-    </section>
+    @if (mostrarConDeuda()) {
+      <section class="bloque bloque-deuda" aria-label="Socios con deuda">
+        <header class="bloque-encabezado">
+          <div>
+            <p class="bloque-contexto">Prioridad de caja</p>
+            <h2>Con deuda <span class="cuenta">· {{ conDeuda().length }}</span></h2>
+          </div>
+          <p class="bloque-nota">Ordenados por atraso</p>
+        </header>
+        @if (conDeuda().length === 0) {
+          <p class="vacio-mensaje">No hay socios con deuda</p>
+        } @else {
+          <ng-container
+            *ngTemplateOutlet="tabla; context: { $implicit: conDeuda(), etiqueta: 'con deuda' }" />
+        }
+      </section>
+    }
 
-    <section aria-label="Socios al día">
-      <h2>Al día · {{ alDia().length }}</h2>
-      @if (alDia().length === 0) {
-        <p class="vacio">No hay socios al día</p>
-      } @else {
-        <ng-container *ngTemplateOutlet="tabla; context: { $implicit: alDia(), etiqueta: 'al día' }" />
-      }
-    </section>
+    @if (mostrarAlDia()) {
+      <section
+        class="bloque bloque-al-dia"
+        [attr.aria-label]="filtroEstado() === 'POR_VENCER' ? 'Socios por vencer' : 'Socios al día'">
+        <header class="bloque-encabezado">
+          <div>
+            <p class="bloque-contexto">
+              {{ filtroEstado() === 'POR_VENCER' ? 'Próximos vencimientos' : 'Control de acceso' }}
+            </p>
+            <h2>
+              {{ filtroEstado() === 'POR_VENCER' ? 'Por vencer' : 'Al día' }}
+              <span class="cuenta">· {{ alDia().length }}</span>
+            </h2>
+          </div>
+          <p class="bloque-nota">
+            {{ filtroEstado() === 'POR_VENCER' ? 'Vencen en 5 días o menos' : 'Sin deuda pendiente' }}
+          </p>
+        </header>
+        @if (alDia().length === 0) {
+          <p class="vacio-mensaje">
+            {{ filtroEstado() === 'POR_VENCER' ? 'No hay socios por vencer' : 'No hay socios al día' }}
+          </p>
+        } @else {
+          <ng-container
+            *ngTemplateOutlet="
+              tabla;
+              context: {
+                $implicit: alDia(),
+                etiqueta: filtroEstado() === 'POR_VENCER' ? 'por vencer' : 'al día',
+              }
+            " />
+        }
+      </section>
+    }
   }
 
   <ng-template #tabla let-lista let-etiqueta="etiqueta">
-    <table>
-      <caption class="sr-only">
-        Socios {{ etiqueta }}: nombre, DNI, actividad, vencimiento y acción de cobro
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">Socio</th>
-          <th scope="col">Actividad</th>
-          <th scope="col">Vence</th>
-          <th scope="col"><span class="sr-only">Acción</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (s of lista; track s.id) {
+    <div class="tabla-envoltorio">
+      <table>
+        <caption class="sr-only">
+          Socios {{ etiqueta }}: nombre, DNI, actividad, estado, vencimiento y acción de cobro
+        </caption>
+        <thead>
           <tr>
-            <td>
-              <a class="nombre" [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
-              <span class="dni">DNI {{ s.dni }}</span>
-            </td>
-            <td>
-              @if (s.actividades.length > 0) {
-                @for (a of s.actividades; track a.id) {
-                  <span class="actividad">{{ a.nombre }}</span>
-                }
-              } @else {
-                <span class="vacio">—</span>
-              }
-            </td>
-            <td>
-              @if (s.estado === 'CON_DEUDA') {
-                <span class="deuda-chip">
-                  <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                    <path
-                      d="M8 1.5 15 14H1Z"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linejoin="round" />
-                    <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1.5" />
-                    <circle cx="8" cy="12" r="0.8" fill="currentColor" />
-                  </svg>
-                  Con deuda
-                </span>
-                <span class="mora">{{ etiquetaMora(s) }}</span>
-              } @else if (esPorVencer(s)) {
-                <span class="aviso-chip">
-                  <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                    <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5" />
-                    <line x1="8" y1="4.5" x2="8" y2="8" stroke="currentColor" stroke-width="1.5" />
-                    <line x1="8" y1="8" x2="10.5" y2="9.5" stroke="currentColor" stroke-width="1.5" />
-                  </svg>
-                  Por vencer · {{ formatearFecha(s.fechaLimite) }}
-                </span>
-              } @else {
-                <span>Vence {{ formatearFecha(s.fechaLimite) }}</span>
-              }
-            </td>
-            <td class="celda-accion">
-              <button
-                type="button"
-                #btnCobrar
-                [class.boton-primario]="s.estado === 'CON_DEUDA'"
-                (click)="abrirConfirmacion(s, btnCobrar)">
-                Cobrar
-              </button>
-            </td>
+            <th scope="col">Socio</th>
+            <th scope="col">Actividad</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="col-accion"><span class="sr-only">Acción</span></th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (s of lista; track s.id) {
+            <tr [class.fila-deuda]="s.estado === 'CON_DEUDA'">
+              <td data-etiqueta="Socio">
+                <a class="nombre" [routerLink]="['/socios', s.id]">{{ s.nombre }} {{ s.apellido }}</a>
+                <span class="dni">DNI {{ s.dni }}</span>
+              </td>
+              <td data-etiqueta="Actividad">
+                <span class="actividades">
+                  @for (a of s.actividades; track a.id) {
+                    <span class="actividad">{{ a.nombre }}</span>
+                  } @empty {
+                    <span class="sin-dato">—</span>
+                  }
+                </span>
+              </td>
+              <td data-etiqueta="Estado">
+                <div class="estado">
+                  @if (s.estado === 'CON_DEUDA') {
+                    <span class="chip chip-deuda">
+                      <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                        <path
+                          d="M8 1.5 15 14H1Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linejoin="round" />
+                        <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1.5" />
+                        <circle cx="8" cy="12" r="0.8" fill="currentColor" />
+                      </svg>
+                      Con deuda
+                    </span>
+                    <span class="mora">{{ etiquetaMora(s) }}</span>
+                    <span class="fecha">Vence {{ formatearFecha(s.fechaLimite) }}</span>
+                  } @else if (esPorVencer(s)) {
+                    <span class="chip chip-aviso">
+                      <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                        <circle
+                          cx="8"
+                          cy="8"
+                          r="6.5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5" />
+                        <line x1="8" y1="4.5" x2="8" y2="8" stroke="currentColor" stroke-width="1.5" />
+                        <line x1="8" y1="8" x2="10.5" y2="9.5" stroke="currentColor" stroke-width="1.5" />
+                      </svg>
+                      Por vencer
+                    </span>
+                    <span class="fecha">Vence {{ formatearFecha(s.fechaLimite) }}</span>
+                  } @else {
+                    <span class="chip chip-al-dia">
+                      <svg class="icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                        <path
+                          d="m3 8.5 3 3L13 4.5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.7"
+                          stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                      Al día
+                    </span>
+                    <span class="fecha">Vence {{ formatearFecha(s.fechaLimite) }}</span>
+                  }
+                </div>
+              </td>
+              <td class="celda-accion" data-etiqueta="Acción">
+                <button
+                  type="button"
+                  #btnCobrar
+                  class="btn-cobrar"
+                  [class.btn-cobrar-deuda]="s.estado === 'CON_DEUDA'"
+                  [attr.aria-label]="'Cobrar a ' + s.nombre + ' ' + s.apellido"
+                  (click)="abrirConfirmacion(s, btnCobrar)">
+                  Cobrar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </ng-template>
 
-  <dialog #dialogo (close)="alCerrarDialogo()" (keydown)="atraparTabulacion($event)" aria-labelledby="titulo-dialogo">
+  <dialog
+    #dialogo
+    class="dialogo"
+    (close)="alCerrarDialogo()"
+    (keydown)="atraparTabulacion($event)"
+    aria-labelledby="titulo-dialogo"
+    aria-describedby="detalle-dialogo">
     @if (socioDialogo(); as s) {
+      <p class="dialogo-contexto">Caja</p>
       <h3 id="titulo-dialogo">Confirmar cobro</h3>
-      <p>
-        Registrar cobro de la cuota de <strong>{{ s.nombre }} {{ s.apellido }}</strong>
-        (DNI {{ s.dni }}).
-      </p>
-      <p>
-        Estado: <strong>{{ s.estado === 'CON_DEUDA' ? 'Con deuda' : 'Al día' }}</strong>
-        · Fecha límite: <strong>{{ formatearFecha(s.fechaLimite) }}</strong>
+
+      <div class="dialogo-socio">
+        <strong>{{ s.nombre }} {{ s.apellido }}</strong>
+        <span class="dni">DNI {{ s.dni }}</span>
+      </div>
+
+      <dl class="dialogo-detalle" id="detalle-dialogo">
+        <div>
+          <dt>Estado</dt>
+          <dd>
+            @if (s.estado === 'CON_DEUDA') {
+              <span class="chip chip-deuda">Con deuda</span>
+            } @else if (esPorVencer(s)) {
+              <span class="chip chip-aviso">Por vencer</span>
+            } @else {
+              <span class="chip chip-al-dia">Al día</span>
+            }
+          </dd>
+        </div>
+        <div>
+          <dt>Vence</dt>
+          <dd>{{ formatearFecha(s.fechaLimite) }}</dd>
+        </div>
         @if (s.estado === 'CON_DEUDA') {
-          <span>· {{ etiquetaMora(s) }}</span>
+          <div>
+            <dt>Atraso</dt>
+            <dd class="mora">{{ etiquetaMora(s) }}</dd>
+          </div>
         }
-      </p>
+      </dl>
+
       <div class="acciones-dialogo">
-        <button type="button" (click)="cerrarConfirmacion()">Cancelar</button>
+        <button type="button" class="btn-secundario" (click)="cerrarConfirmacion()">Cancelar</button>
         <button type="button" class="boton-primario" (click)="irACobrar()">Ir a cobrar</button>
       </div>
     }

@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.gimnasio.config.ZonaHorariaConfig;
 import com.gimnasio.dto.ActividadResponse;
+import com.gimnasio.excepcion.ConflictoException;
 import com.gimnasio.seguridad.JwtFilter;
 import com.gimnasio.seguridad.JwtUtil;
 import com.gimnasio.seguridad.SecurityConfig;
@@ -24,11 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 @WebMvcTest(ActividadControlador.class)
 @Import({SecurityConfig.class, JwtFilter.class, JwtUtil.class, ZonaHorariaConfig.class})
@@ -59,7 +58,7 @@ class ActividadControladorTest {
   @WithMockUser(roles = "ADMIN")
   void crear_duplicado_devuelve409() throws Exception {
     when(servicio.crear(any()))
-        .thenThrow(new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe"));
+        .thenThrow(new ConflictoException("Ya existe"));
 
     mvc.perform(post("/api/admin/actividades")
             .contentType(MediaType.APPLICATION_JSON)
@@ -79,7 +78,7 @@ class ActividadControladorTest {
   @Test
   @WithMockUser(roles = "ADMIN")
   void eliminar_conSocios_devuelve409() throws Exception {
-    doThrow(new ResponseStatusException(HttpStatus.CONFLICT, "Tiene socios"))
+    doThrow(new ConflictoException("Tiene socios"))
         .when(servicio).eliminar(eq(1));
 
     mvc.perform(delete("/api/admin/actividades/1")).andExpect(status().isConflict());

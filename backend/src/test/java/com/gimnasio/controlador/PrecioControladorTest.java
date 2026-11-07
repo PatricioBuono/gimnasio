@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.gimnasio.config.ZonaHorariaConfig;
 import com.gimnasio.dto.PrecioResponse;
+import com.gimnasio.excepcion.SolicitudInvalidaException;
 import com.gimnasio.seguridad.JwtFilter;
 import com.gimnasio.seguridad.JwtUtil;
 import com.gimnasio.seguridad.SecurityConfig;
@@ -20,11 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 @WebMvcTest(PrecioControlador.class)
 @Import({SecurityConfig.class, JwtFilter.class, JwtUtil.class, ZonaHorariaConfig.class})
@@ -56,7 +55,7 @@ class PrecioControladorTest {
   @WithMockUser(roles = "ADMIN")
   void actualizarCuota_invalida_devuelve400() throws Exception {
     when(servicio.actualizarCuota(any()))
-        .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe ser mayor a 0"));
+        .thenThrow(new SolicitudInvalidaException("Debe ser mayor a 0"));
 
     mvc.perform(put("/api/admin/precios/cuota")
             .contentType(MediaType.APPLICATION_JSON)

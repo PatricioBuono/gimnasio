@@ -103,14 +103,14 @@ describe('DashboardComponent', () => {
     expect(texto()).toContain('Al día · 1');
   });
 
-  it('sin resultados muestra mensaje, limpiar y Nuevo Socio', () => {
+  it('sin resultados muestra mensaje, limpiar y Nuevo socio', () => {
     servicio.buscar.mockReturnValue(of([]));
     comp.busqueda.setValue('nadie');
     vi.advanceTimersByTime(300);
     fixture.detectChanges();
 
     expect(texto()).toContain('Sin resultados');
-    expect(texto()).toContain('Nuevo Socio');
+    expect(texto()).toContain('Nuevo socio');
   });
 
   it('filtro por actividad filtra en memoria sin llamadas extra', () => {
@@ -127,6 +127,21 @@ describe('DashboardComponent', () => {
     fixture.detectChanges();
 
     expect(texto()).not.toContain('Juan');
+  });
+
+  it('el marcador conserva totales y oculta la sección que no corresponde', () => {
+    comp.cambiarFiltroEstado('CON_DEUDA');
+    fixture.detectChanges();
+
+    const numeros = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.marcador-numero'),
+    ).map((n) => n.textContent?.trim());
+    const secciones = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('section.bloque'),
+    ).map((s) => s.getAttribute('aria-label'));
+
+    expect(numeros).toEqual(['1', '0', '1']);
+    expect(secciones).toEqual(['Socios con deuda']);
   });
 
   it('error de carga muestra reintento', () => {
@@ -149,6 +164,17 @@ describe('DashboardComponent', () => {
 
     expect(navegar).toHaveBeenCalledWith(['/cobros', 2]);
     expect(comp.socioDialogo()).toBeNull();
+  });
+
+  it('el diálogo distingue por vencer de con deuda', () => {
+    vi.setSystemTime(new Date('2026-11-06T12:00:00'));
+    const porVencer: SocioEstado = { ...ana, fechaLimite: '2026-11-08' };
+    comp.abrirConfirmacion(porVencer, document.createElement('button'));
+    fixture.detectChanges();
+
+    const dialogo = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    expect(dialogo.textContent).toContain('Por vencer');
+    expect(dialogo.textContent).not.toContain('Atraso');
   });
 
   it('cancelar no navega', () => {

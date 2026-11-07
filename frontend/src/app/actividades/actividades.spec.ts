@@ -38,12 +38,31 @@ describe('Actividades', () => {
     fixture.detectChanges();
   });
 
-  it('renderiza tabla con pill de estado sin corchetes', () => {
+  it('renderiza el catálogo con estado y resumen sin corchetes', () => {
     expect(texto()).toContain('Actividades · 2');
     expect(texto()).toContain('Crossfit');
     expect(texto()).toContain('Activa');
     expect(texto()).toContain('Inactiva');
+    expect(texto()).toMatch(/1 activa\s*·\s*1 inactiva/);
     expect(texto()).not.toContain('[ACTIVA]');
+  });
+
+  it('muestra la ficha en modo edición con el nombre cargado', () => {
+    comp.editar(lista[0]);
+    fixture.detectChanges();
+
+    expect(texto()).toContain('Editar actividad');
+    expect(texto()).toContain('Edición');
+    expect(texto()).toContain('Guardar cambios');
+    expect(comp.form.value.nombre).toBe('Crossfit');
+  });
+
+  it('al editar limpia una alerta de error anterior', () => {
+    comp.error.set('No se pudo cargar el catálogo');
+    comp.editar(lista[0]);
+    fixture.detectChanges();
+
+    expect(texto()).not.toContain('No se pudo cargar el catálogo');
   });
 
   it('botones de fila tienen nombre accesible con la actividad', () => {
@@ -51,6 +70,15 @@ describe('Actividades', () => {
       'button[aria-label="Eliminar Crossfit"]',
     );
     expect(eliminar?.textContent?.trim()).toBe('Eliminar');
+  });
+
+  it('asocia etiqueta, ayuda y obligatoriedad al campo nombre', () => {
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[formcontrolname="nombre"]',
+    );
+    expect(input?.getAttribute('aria-labelledby')).toBe('etiqueta-nombre');
+    expect(input?.getAttribute('aria-describedby')).toBe('ayuda-nombre');
+    expect(input?.getAttribute('aria-required')).toBe('true');
   });
 
   it('crear limpia, enfoca nombre y confirma', () => {
@@ -61,6 +89,15 @@ describe('Actividades', () => {
     expect(servicio.crear).toHaveBeenCalledWith({ nombre: 'Funcional', descripcion: null });
     expect(texto()).toContain('creada');
     expect(document.activeElement?.getAttribute('formcontrolname')).toBe('nombre');
+  });
+
+  it('nombre duplicado muestra el error de unicidad en la alerta', () => {
+    servicio.crear.mockReturnValue(throwError(() => ({ status: 409 }) as never));
+    comp.form.setValue({ nombre: 'Crossfit', descripcion: '' });
+    comp.guardar();
+    fixture.detectChanges();
+
+    expect(texto()).toContain('Ya existe una actividad con ese nombre');
   });
 
   it('formulario inválido marca aria-invalid y no llama', () => {

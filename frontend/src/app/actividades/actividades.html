@@ -1,86 +1,158 @@
 <div class="pagina">
-  <h1>Actividades</h1>
+  <header class="encabezado">
+    <div class="titular">
+      <p class="contexto"><span class="pulso" aria-hidden="true"></span> Administración Hulk</p>
+      <h1>Actividades</h1>
+    </div>
+  </header>
 
-  <section aria-label="Nueva actividad">
-    <h2>{{ editandoId() === null ? 'Nueva actividad' : 'Editar actividad' }}</h2>
-
-    @if (error()) {
-      <p class="error" role="alert">
-        {{ error() }}
-        <button type="button" (click)="cargar()">Reintentar</button>
-      </p>
-    }
-    @if (exito()) {
-      <p class="exito" role="status">{{ exito() }}</p>
-    }
-
-    <form [formGroup]="form" (ngSubmit)="guardar()">
-      <label>
-        Nombre (obligatorio)
-        <input
-          #nombreInput
-          type="text"
-          formControlName="nombre"
-          placeholder="Ej: Musculación"
-          [attr.aria-invalid]="nombreInvalido"
-          aria-describedby="error-nombre" />
-        @if (nombreInvalido) {
-          <span class="error-campo" id="error-nombre" role="alert">El nombre es obligatorio</span>
-        }
-      </label>
-      <label>
-        Descripción (opcional)
-        <input type="text" formControlName="descripcion" placeholder="Ej: Entrenamiento de fuerza" />
-      </label>
-      <button type="submit">{{ editandoId() === null ? 'Crear' : 'Guardar' }}</button>
-      @if (editandoId() !== null) {
-        <button type="button" (click)="cancelarEdicion()">Cancelar</button>
-      }
-    </form>
-  </section>
-
-  <section aria-label="Listado de actividades">
-    <h2>Actividades · {{ actividades().length }}</h2>
-
-    @if (cargando()) {
-      <div role="status" aria-label="Cargando actividades">
-        <span class="sr-only">Cargando actividades…</span>
-        <ul class="skeleton" aria-hidden="true">
-          <li></li>
-          <li></li>
-          <li></li>
-        </ul>
+  @if (error()) {
+    <div class="alerta alerta-error" role="alert">
+      <div>
+        <strong>Algo no salió como esperábamos.</strong>
+        <p>{{ error() }}</p>
       </div>
-    } @else if (actividades().length === 0 && !error()) {
-      <p class="vacio">Todavía no hay actividades. Cree la primera con el formulario de arriba.</p>
-    } @else {
-      <table>
-        <caption class="sr-only">
-          Actividades: nombre, descripción, estado y acciones
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Actividad</th>
-            <th scope="col">Descripción</th>
-            <th scope="col">Estado</th>
-            <th scope="col"><span class="sr-only">Acciones</span></th>
-          </tr>
-        </thead>
-        <tbody>
+      <button type="button" class="btn-secundario" (click)="cargar()">Reintentar</button>
+    </div>
+  }
+  @if (exito()) {
+    <p class="alerta alerta-exito" role="status">{{ exito() }}</p>
+  }
+
+  <div class="tablero">
+    <aside
+      class="editor"
+      [class.editando]="editandoId() !== null"
+      [attr.aria-label]="editandoId() === null ? 'Nueva actividad' : 'Editar actividad'">
+      <div class="editor-encabezado">
+        <p class="rotulo">Ficha de actividad</p>
+        <span class="modo">{{ editandoId() === null ? 'Alta' : 'Edición' }}</span>
+      </div>
+      <div class="editor-contenido">
+        <h2>{{ editandoId() === null ? 'Nueva actividad' : 'Editar actividad' }}</h2>
+        <p class="editor-ayuda">
+          {{
+            editandoId() === null
+              ? 'Cargá una actividad para que esté disponible en la recepción.'
+              : 'Corregí la ficha. Los socios que ya la tienen asignada conservan el vínculo.'
+          }}
+        </p>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()">
+          <label>
+            <span class="etiqueta" id="etiqueta-nombre">Nombre</span>
+            <span class="ayuda-campo" id="ayuda-nombre"
+              >Único, sin distinguir mayúsculas ni espacios.</span
+            >
+            <input
+              #nombreInput
+              type="text"
+              formControlName="nombre"
+              placeholder="Ej: Musculación"
+              aria-labelledby="etiqueta-nombre"
+              aria-required="true"
+              [attr.aria-invalid]="nombreInvalido"
+              [attr.aria-describedby]="
+                nombreInvalido ? 'ayuda-nombre error-nombre' : 'ayuda-nombre'
+              " />
+            @if (nombreInvalido) {
+              <span class="error-campo" id="error-nombre" role="alert"
+                >El nombre es obligatorio</span
+              >
+            }
+          </label>
+
+          <label>
+            <span class="etiqueta" id="etiqueta-descripcion"
+              >Descripción <span class="opcional">Opcional</span></span
+            >
+            <span class="ayuda-campo" id="ayuda-descripcion"
+              >Se muestra en la ficha del socio y en el catálogo.</span
+            >
+            <textarea
+              formControlName="descripcion"
+              rows="3"
+              placeholder="Ej: Entrenamiento de fuerza y acondicionamiento."
+              aria-labelledby="etiqueta-descripcion"
+              aria-describedby="ayuda-descripcion"></textarea>
+          </label>
+
+          <div class="acciones-form">
+            <button type="submit" class="btn-guardar">
+              {{ editandoId() === null ? 'Crear actividad' : 'Guardar cambios' }}
+            </button>
+            @if (editandoId() !== null) {
+              <button type="button" class="btn-cancelar" (click)="cancelarEdicion()">
+                Cancelar edición
+              </button>
+            }
+          </div>
+        </form>
+      </div>
+    </aside>
+
+    <section
+      class="catalogo"
+      aria-labelledby="titulo-catalogo"
+      [attr.aria-busy]="cargando()">
+      <header class="catalogo-encabezado">
+        <div>
+          <p class="rotulo">Catálogo</p>
+          <h2 id="titulo-catalogo">
+            Actividades <span class="cuenta">· {{ cargando() ? '—' : actividades().length }}</span>
+          </h2>
+        </div>
+        @if (!cargando() && !error()) {
+          <p class="catalogo-nota">
+            {{ activasTotal() }} {{ activasTotal() === 1 ? 'activa' : 'activas' }} ·
+            {{ inactivasTotal() }} {{ inactivasTotal() === 1 ? 'inactiva' : 'inactivas' }}
+          </p>
+        }
+      </header>
+
+      @if (cargando()) {
+        <div class="catalogo-cargando" role="status" aria-label="Cargando actividades">
+          <span class="sr-only">Cargando actividades…</span>
+          <div class="skeleton" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      } @else if (actividades().length === 0 && !error()) {
+        <div class="vacio-catalogo">
+          <p class="vacio-titulo">Todavía no hay actividades</p>
+          <p>
+            Creá la primera con la ficha de alta. Va a quedar disponible para asignar en recepción.
+          </p>
+        </div>
+      } @else if (actividades().length > 0) {
+        <ul class="lista-actividades">
           @for (a of actividades(); track a.id) {
-            <tr [class.inactiva]="a.estado !== 'ACTIVA'">
-              <td class="nombre">{{ a.nombre }}</td>
-              <td class="descripcion" [title]="a.descripcion ?? ''">
-                {{ a.descripcion || '—' }}
-              </td>
-              <td>
-                <span class="pill" [class.pill-inactiva]="a.estado !== 'ACTIVA'">
-                  <span class="punto" aria-hidden="true"></span>
-                  {{ a.estado === 'ACTIVA' ? 'Activa' : 'Inactiva' }}
-                </span>
-              </td>
-              <td class="celda-accion">
-                <button type="button" (click)="editar(a)" [attr.aria-label]="'Editar ' + a.nombre">
+            <li class="actividad-fila" [class.inactiva]="a.estado !== 'ACTIVA'">
+              <div class="actividad-principal">
+                <div class="actividad-titulo">
+                  <h3>{{ a.nombre }}</h3>
+                  <span class="pill" [class.pill-inactiva]="a.estado !== 'ACTIVA'">
+                    <span class="punto" aria-hidden="true"></span>
+                    {{ a.estado === 'ACTIVA' ? 'Activa' : 'Inactiva' }}
+                  </span>
+                </div>
+                <p class="descripcion">{{ a.descripcion || 'Sin descripción cargada.' }}</p>
+                <p class="estado-nota">
+                  {{
+                    a.estado === 'ACTIVA'
+                      ? 'Disponible para asignar'
+                      : 'No se asigna a nuevos socios'
+                  }}
+                </p>
+              </div>
+              <div class="acciones-fila">
+                <button
+                  type="button"
+                  class="btn-editar"
+                  (click)="editar(a)"
+                  [attr.aria-label]="'Editar ' + a.nombre">
                   Editar
                 </button>
                 @if (a.estado === 'ACTIVA') {
@@ -91,25 +163,28 @@
                     Inhabilitar
                   </button>
                 } @else {
-                  <button type="button" (click)="habilitar(a)" [attr.aria-label]="'Habilitar ' + a.nombre">
+                  <button
+                    type="button"
+                    (click)="habilitar(a)"
+                    [attr.aria-label]="'Habilitar ' + a.nombre">
                     Habilitar
                   </button>
                 }
                 <button
                   #btnEliminar
                   type="button"
-                  class="btn-peligro accion-peligro"
+                  class="accion-peligro"
                   (click)="pedirEliminar(a, btnEliminar)"
                   [attr.aria-label]="'Eliminar ' + a.nombre">
                   Eliminar
                 </button>
-              </td>
-            </tr>
+              </div>
+            </li>
           }
-        </tbody>
-      </table>
-    }
-  </section>
+        </ul>
+      }
+    </section>
+  </div>
 
   <app-confirmar-dialogo
     [titulo]="'Eliminar ' + (eliminarPendiente()?.nombre ?? '')"
